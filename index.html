@@ -528,8 +528,9 @@ const NAME={energy:'精力',mood:'心情',charm:'魅力',talent:'才艺',fame:'�
 const COLOR={charm:'#e88aa0',talent:'#b7a3e6',fame:'#e8c26a',love:'#ff8a9a',mood:'#f2a27a',energy:'#ffd36b'};
 const CAP={energy:100,mood:100,charm:100,talent:100,fame:100,love:100,friend:100,money:1e9,gifts:99,sweets:99,food:99,fruit:99,protein:99};
 const DAYS='一二三四五六日';
-const IMG={su:'assets/sutang.png',gu:'assets/guyan.png',mom:'assets/gumom.png',xu:'assets/xuqing.png',kiki:'assets/kiki.png'};
-const PEOPLE={su:'乔妩',gu:'靳野',mom:'靳夫人·沈鸷',xu:'秦骄',kiki:'林骁 Kiki',mama:'妈妈',aunt:'三姑',landlord:'房东',spam:'陌生号码',rich:'富二代'};
+const IMG={su:'assets/sutang.png',gu:'assets/guyan.png',mom:'assets/gumom.png',xu:'assets/xuqing.png',kiki:'assets/kiki.png',boss:'assets/npc_boss.png',regular:'assets/npc_regular.png',clerk:'assets/npc_clerk.png',landlady:'assets/npc_landlady.png'};
+const NPC_OK={su:1,gu:1,mom:1,xu:1,kiki:1};['boss','regular','clerk','landlady'].forEach(k=>{const im=new Image();im.onload=()=>{NPC_OK[k]=1;if(S&&S.loc)renderAll()};im.src=IMG[k]});
+const PEOPLE={su:'乔妩',gu:'靳野',mom:'靳夫人·沈鸷',xu:'秦骄',kiki:'林骁 Kiki',mama:'妈妈',aunt:'三姑',boss:'梅姐 · 老板娘',regular:'周太',clerk:'柜姐 Ann',landlady:'包租婆',landlord:'房东',spam:'陌生号码',rich:'富二代'};
 
 /* ---------- 12 周剧情 ---------- */
 const CH=[
@@ -860,7 +861,12 @@ function npcsIn(id){
   if(id==='florist'&&S.t>=9&&S.t<18)n.push(['kiki',82]);
   if(id==='bar'&&S.t>=19)n.push(['kiki',84]);
   if(id==='party')n.push(['kiki',18]);
-  return n;
+  if(id==='cafe'){n.push(['boss',16]);if(S.t>=14&&S.t<18)n.push(['regular',70]);if(S.day%2===1&&S.t>=15&&S.t<18&&!n.some(x=>x[0]==='gu'))n.push(['kiki',40])}
+  if(id==='mall'){n.push(['clerk',38]);if(S.ch>=3&&(S.day===2||S.day===5)&&S.t>=14&&S.t<19)n.push(['xu',72])}
+  if(id==='home'){if(S.kikiVisit===S.day&&S.t>=19)n.push(['kiki',72]);if(S.day===1&&S.t>=10&&S.t<13)n.push(['landlady',76])}
+  if(id==='tea'&&S.ch>=4&&S.t>=14)n.push(['mom',76]);
+  if(id==='dine'&&S.t>=19&&S.day%3===0)n.push(['kiki',72]);
+  return n.filter(x=>NPC_OK[x[0]]);
 }
 const guHere=()=>npcsIn(S.loc).some(n=>n[0]==='gu');const kikiHere=()=>npcsIn(S.loc).some(n=>n[0]==='kiki');
 /* 每个房间的人物比例、站位、光照方向和色温：h=人物高度% b=脚底离窗口底部% sk=投影倾斜(光从右来→影子往左为正) len=投影长度 f=色温滤镜 */
@@ -885,7 +891,7 @@ function renderRoom(){
     return `<img class="cast"${idS} src="${IMG[w]}" style="left:${x}%;bottom:${fx.b}%;height:${fx.h}%;transform:translateX(-50%) scaleY(-${fx.len}) skewX(${fx.sk}deg)">`+
       `<div class="floorShadow"${idC} style="left:${x}%;bottom:${fx.b-1.5}%"></div>`+
       `<img class="sprite${isSu?'':' npc'}"${idA}${nm} src="${IMG[w]}" style="left:${x}%;bottom:${fx.b}%;height:${fx.h}%;filter:${fx.f} drop-shadow(0 0 1px rgba(0,0,0,.25))">`+
-      (isSu?'':`<div class="nametag" style="left:${x}%;bottom:${fx.b+fx.h+1}%;top:auto">${PEOPLE[w]}</div>`)};
+      (isSu?'':`<div class="nametag" style="left:${x}%;bottom:${fx.b+fx.h+1}%;top:auto">💬 ${PEOPLE[w]}</div>`)};
   $('#roomActors').innerHTML=npcs.map(([w,x])=>actor(w,x,false)).join('')+actor('su',suX,true);
   const acts=A.filter(a=>inLoc(a,id));
   const card=a=>{const why=blocked(a);return `<div class="act ${why?'off':''}" data-act="${a.id}" title="${a.d(S)}${why?' · '+why:''}">${icon(a.id)}<span class="an">${a.n}</span><span class="ac">${why||(a.h?a.h+'小时 · ':'')+a.d(S).split(' ')[0]}</span></div>`};
@@ -909,7 +915,39 @@ function blocked(a){
   box.addEventListener('scroll',actNavSync);box.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){box.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
 })();
 $('#acts').onclick=e=>{const b=e.target.closest('[data-act]');if(!b||busy)return;if(b.dataset.act==='exit')return leaveRoom();if(b.dataset.act==='more'){$('#offList').classList.toggle('show');return}if(b.dataset.act==='appt')return doAppt();if(!b.classList.contains('off'))doAct(b.dataset.act)};
+
+/* ---------- 场所里的人：点击聊天，每人每天一次 ---------- */
+const NPCTALK={
+ boss:{line:s=>['今天客人多，嘴甜一点，小费都是你的。','你的拉花进步了，下个月给你涨工资。','听说你跟靳家少爷……啧，我这小店怕是留不住你咯。'][Math.min(2,Math.floor(s.ch/4))],
+   o:[['帮老板娘对账','才艺+1 心情-1',{talent:1,mood:-1}],['撒娇要一份员工餐','精力+10',{energy:10}]]},
+ regular:{line:s=>['小妹，我跟你讲，三楼陈太太的老公又换秘书了。','你这条手链不错嘛，哪里买的？','我侄子在靳家公司做事，说靳少最近心情特别好——是不是因为你呀？'][Math.floor(Math.random()*3)],
+   o:[['陪她聊八卦','名望+1 心情+2',{fame:1,mood:2}],['夸她的翡翠镯子（魅力 15）','她塞给你 ¥60 小费',{money:60,fame:1},s=>s.charm<15&&'魅力不够，夸得太假']]},
+ clerk:{line:s=>s.charm<30?'这季新款到了，你穿粉色会很好看。':'乔小姐来啦！VIP 室给你留着呢。',
+   o:[['请她帮你搭配','魅力+2',{charm:2}],['打听哪家太太来过','名望+1',{fame:1}]]},
+ landlady:{line:()=>'乔小姐，月底了啊。楼下水管又响，你没在屋里乱搞吧？',
+   o:[['送她一份自制甜点','甜点-1 心情+4',{sweets:-1,mood:4},s=>s.sweets<1&&'没有甜点'],['笑着打哈哈','心情-2',{mood:-2}]]},
+ xu:{line:()=>'哟，咖啡店的也来逛名店城？这家的东西……你买得起吗？',
+   o:[['「买不起，但穿得比你好看。」','魅力+1 心情+4',{charm:1,mood:4}],['不理她，转身就走','心情-3',{mood:-3}]]},
+ mom:{line:()=>'乔小姐也来喝茶？坐吧。听说你最近……很努力。',
+   o:[['陪靳夫人喝完这壶茶','名望+3 心情-3',{fame:3,mood:-3}],['礼貌告退','—',{}]]},
+ kikiCafe:{who:'kiki',line:()=>'宝！我下班顺路来看你。给我做一杯，不加糖——跟靳野一样，哈哈。',
+   o:[['请她喝咖啡','¥20 友情+4',{money:-20,friend:4}],['一起吐槽难缠的客人','心情+5 友情+2',{mood:5,friend:2}]]},
+ kikiHome:{who:'kiki',line:()=>'开门开门！我带了面膜和炸鸡，今晚不醉不归！',
+   o:[['一起敷面膜聊八卦','心情+8 魅力+1 友情+4',{mood:8,charm:1,friend:4}],['追剧吃宵夜','心情+10 精力-5 友情+5',{mood:10,energy:-5,friend:5}],['帮我想想怎么拿下靳野','友情+3 好感+2',{friend:3,love:2}]]},
+ kikiDine:{who:'kiki',line:()=>'这么巧！一起拼个桌？我请——下次你请。',
+   o:[['拼桌吃饭','心情+8 友情+4',{mood:8,friend:4}],['改天吧','—',{}]]},
+};
+function npcKey(w){if(w==='kiki'){if(S.loc==='cafe')return 'kikiCafe';if(S.loc==='home')return 'kikiHome';if(S.loc==='dine')return 'kikiDine'}return NPCTALK[w]?w:null}
+async function talkNpc(w){const k=npcKey(w);if(!k)return false;S.talked=S.talked||{};
+  const who=NPCTALK[k].who||w;
+  if(S.talked[k]===S.day){await talk(who,'（今天已经聊过了）');return true}
+  const T=NPCTALK[k];const i=await talk(who,T.line(S),T.o.map(o=>[o[0],(o[3]&&o[3](S))||o[1]]));
+  const o=T.o[i];if(o[3]&&o[3](S)){await talk('su',o[3](S));return true}
+  const b={...S};for(const x in o[2])add(x,o[2][x]);S.talked[k]=S.day;S.t+=.5;if(who==='kiki')S.talkedKiki=true;renderAll();pops(b);save();
+  if(Object.keys(o[2]).length)await talk('su','（'+fxText(o[2])+'）',null,diffText(b));
+  return true}
 $('#roomActors').onclick=async e=>{const n=e.target.closest('[data-npc]');if(!n||busy)return;const w=n.dataset.npc;
+  if(npcKey(w)){await talkNpc(w);return}
   if(w==='kiki'&&!S.talkedKiki){S.talkedKiki=true;if(S.loc==='florist')setTimeout(()=>qDone('kiki'),400);const b={...S};add('friend',3);add('mood',4);S.t+=.5;renderAll();await talk('kiki',DLG.kiki[0](S),null,diffText(b));}
   else if(w==='gu'&&!S.talkedGu){S.talkedGu=true;const b={...S};add('love',1);S.loveToday=true;S.t+=.5;renderAll();await talk('gu',DLG.gu[0](S),null,diffText(b));}
   else await talk(w,(DLG[w]?DLG[w][0](S):'……'));
@@ -955,6 +993,7 @@ async function endDay0(sleep,fast){
   await talk('su',(late?'玩到半夜，被迫回家倒头就睡。':'晚安，海湾市。')+`（房租和生活费 -¥${cost}）`+(b.ch>=3&&b.metGu&&!b.loveToday?'（今天没联系他，好感 -2）':'')+(messy?'（屋子三天没打扫，乱糟糟的，心情 -6）':'')+(b.ateWell?'（吃得健康，精力恢复更多）':''),null,diffText(b));
   if(missed.length)await talk(missed[0].kind==='meet'?missed[0].who:'aunt',missed[0].kind==='meet'?`你没来「${LOC[missed[0].loc].n}」……放鸽子是吧？（心情 -5，名望 -1）`:`${missed[0].n}在「${LOC[missed[0].loc].n}」等了你一下午！三姑的脸往哪儿搁？（心情 -5，名望 -1）`);
   if(Math.random()<.3)await event();
+  if(S.friend>=15&&Math.random()<.35){S.kikiVisit=S.day;await talk('kiki','今晚 7 点后我去你家玩！把家收拾一下，我带炸鸡～')}
   for(const m of morningNotes())await talk('kiki',m);
   if(S.metGu&&!guDatesOfWeek().some(a=>a.day===S.day)&&Math.random()<.5){const b={...S};add('love',2);S.loveToday=true;renderAll();pops(b);save();await talk('gu',['早。昨晚梦见你了——别得意。','路过你们店，咖啡还是你做的好喝。','今天开了六个会。想你的时间，比开会长。','晚上有空吗？……算了，周末见。'][Math.floor(Math.random()*4)],null,diffText(b))}
   if(S.ch>=3&&!pendingAppt()&&Math.random()<.2){S.calls++;await ringPhone(dateOffer())}
@@ -1102,6 +1141,7 @@ function openPlan(){
 function nextTask(){
   const ap=(S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===S.ch&&(a.day>S.day||a.day===S.day&&S.t<=a.to)).sort((x,y)=>x.day-y.day||x.from-y.from)[0];
   if(ap)return {t:whenTxt(ap),w:`「${LOC[ap.loc].n}」${apptWhat(ap)}`,loc:ap.loc,now:ap.day===S.day&&S.t>=ap.from-1.5&&S.loc!==ap.loc};
+  if(S.kikiVisit===S.day&&S.t<23&&!(S.talked&&S.talked.kikiHome===S.day))return {t:'今晚 19:00 后',w:'Kiki 来家里玩（回家点她聊天）',loc:'home'};
   if(S.ch>=4&&S.day===6&&S.t<=21)return {t:'今晚 20:00',w:'「星空天台派对」——Kiki 等你',loc:'party'};
   if(S.ch>=3&&S.day>=6&&S.t<16)return {t:'周末',w:'靳野在「南湾高尔夫球会」或「卡丁车场」',loc:'golf'};
   if(S.ch>=2&&!S.loveToday&&S.t<11)return {t:'11:00 前',w:'靳野早上会来「糖霜咖啡」',loc:'cafe'};
