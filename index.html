@@ -491,6 +491,26 @@ h1,h3,#quest h3,#cut .card h1,#roomName,.act .an,#talk .who,#cut .bar .who{font-
 #cut .rrow{grid-template-columns:52px 1fr 92px!important;font-size:14px!important;margin:12px 0!important}
 #cut .res .mono{margin-top:16px!important;font-size:14px!important;line-height:1.7}
 #cut .card h1{margin:6px 0 4px!important}
+
+/* 精品店 / 衣柜 */
+#plan .pbox.shop{width:min(760px,86%)}
+#plan .tabs{display:flex;gap:6px;margin:0 0 12px}
+#plan .tabs button{border:1px solid var(--rg2);background:transparent;color:var(--ink2);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:13px}
+#plan .tabs button.on{background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);border-color:transparent;font-weight:700}
+#plan .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#plan .si{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:14px;background:var(--tile1);border:1px solid var(--rg2)}
+#plan .si i{display:block;height:54px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),inset 0 -18px 30px rgba(0,0,0,.18)}
+#plan .si b{font-size:14px;color:var(--ink)}#plan .si span{font-size:11px;color:var(--ink2);min-height:28px}
+#plan .si button,#plan .wr button{border:0;border-radius:999px;padding:6px 10px;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk)}
+#plan .si button:disabled{opacity:.45;cursor:default}
+#plan .si.has{opacity:.7}
+#plan .wr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--rg2)}
+#plan .wr em{font-style:normal;width:44px;color:var(--rose);font-weight:700}
+#plan .wr button{display:flex;align-items:center;gap:6px;background:var(--tile1);color:var(--ink);border:1px solid var(--rg2);font-weight:500}
+#plan .wr button.on{background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);border-color:transparent;font-weight:700}
+#plan .wr button.off{background:transparent;color:var(--ink2)}
+#plan .wr button i{width:14px;height:14px;border-radius:50%;display:inline-block}
+#plan .sm{font-size:12px;color:var(--ink2);margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -648,6 +668,7 @@ const LOC={
  tea:{n:'海港名店城 · 半岛茶室',sub:'mall',open:[10,20],door:10},
  dine:{n:'海港名店城 · 云端法餐厅',sub:'mall',open:[11,23],door:10},
  pet:{n:'晚香花坊 · 猫咖萌宠屋',sub:'florist',open:[9,21],door:10},
+ cars:{n:'南湾卡丁车场 · 海湾超跑 4S 店',sub:'kart',open:[10,22],door:10},
  market:{n:'南湾超市',d:2,open:[8,22],rect:[16,58,30,26],dot:[30,80],door:8},
  church:{n:'圣心教堂',d:2,open:[7,20],rect:[28,6,13,26],dot:[35,30],door:8},
  academy:{n:'雅韵进修学院',d:2,open:[9,21],rect:[46,8,22,24],dot:[57,30],door:8},
@@ -668,7 +689,7 @@ const A=[
  {id:'night',loc:'cafe',ic:'🌃',n:'上晚班',h:4,win:[16,19],x:62,d:s=>`¥${Math.round(wage(s)*.9)} 精力-24`,line:'再忍忍。以后是别人给我端咖啡。',need:s=>s.energy<24&&'精力不足',
   run:s=>{const low=s.mood<25;add('money',Math.round(wage(s)*.9*(low?.5:1)));add('energy',-24);add('mood',-8)}},
  {id:'latte',loc:'cafe',ic:'💘',n:'给靳野做拉花',h:1,win:[8,11],x:62,d:()=>'好感+2 心情+5',line:'拉花画颗心，他会以为是巧合。',need:s=>s.ch<2?'第 2 周解锁':s.energy<4&&'精力不足',run:s=>{add('love',2);add('mood',5);add('energy',-4);s.loveToday=true}},
- {id:'dress',loc:'mall',ic:'👗',n:'买新裙子',h:0,win:[10,21],x:22,d:()=>'¥200 魅力+5（不花时间）',line:'这条裙子，就为了让他多看两眼。',need:s=>s.money<200&&'钱不够',run:s=>{add('money',-200);add('charm',5)}},
+ {id:'dress',loc:'mall',ic:'👗',n:'逛精品店',h:0,win:[10,21],x:22,d:()=>'服装 名表 首饰 包包 美妆',line:'',shop:['outfit','watch','jewel','bag','makeup']},
  {id:'salon',loc:'mall',ic:'💅',n:'美容院',h:2,win:[10,20],x:56,d:()=>'¥80 魅力+2 心情+8',line:'漂亮是需要预算的。',need:s=>s.money<80&&'钱不够',run:s=>{add('money',-80);add('charm',2);add('mood',8);add('energy',-4)}},
  {id:'piano',loc:'mall',ic:'🎹',n:'钢琴课',h:2,win:[10,18],x:82,d:()=>'¥100 才艺+4 精力-10',line:'弹得好不好不重要，弹给谁听才重要。',need:s=>s.money<100?'钱不够':s.energy<10&&'精力不足',run:s=>{add('money',-100);add('talent',4);add('energy',-10)}},
  {id:'buyGift',loc:'mall',ic:'🎁',n:'挑一份礼物',h:0,win:[10,21],x:22,d:()=>'¥150 礼物+1（不花时间）',line:'要贵得刚好——让他记住我，又看不穿我。',need:s=>s.money<150&&'钱不够',run:s=>{add('money',-150);add('gifts',1)}},
@@ -717,6 +738,14 @@ const A=[
  /* 咖啡馆 */
  {id:'wipe',loc:'cafe',n:'擦桌收银',h:1,win:[8,21],x:40,d:()=>'¥45 精力-6',line:'擦桌子的时候，顺便听听隔壁桌太太们的八卦。',need:s=>s.energy<6&&'精力不足',run:s=>{add('money',45);add('energy',-6);add('mood',-2)}},
  {id:'toKitchen',loc:'cafe',n:'进入后厨',h:0,win:[8,22],x:72,d:()=>'去后厨看看',line:'',go:'kitchen'},
+ {id:'wardrobe',loc:'home',n:'打开衣柜',h:0,win:[0,28],x:30,d:()=>'换衣服、戴首饰、挑包',line:'',wardrobe:true},
+ {id:'makeupOn',loc:'home',n:'化个全妆',h:.5,win:[6,22],x:21,d:()=>'美妆-1 今天魅力+5',line:'底妆、修容、眼线挑高两毫米——今天的我，谁都别想移开眼。',need:s=>s.madeUp===s.day?'今天已经化好了':(s.makeup||0)<1&&'没有美妆，去名店城精品店买',run:s=>{s.makeup--;s.madeUp=s.day;add('mood',3)}},
+ /* 卡丁车场 → 海湾超跑 4S 店 */
+ {id:'to4s',loc:'kart',n:'去隔壁 4S 店',h:0,win:[10,21],x:86,d:()=>'看车、试驾、买车',line:'',go:'cars'},
+ {id:'carShop',loc:'cars',n:'看车选车',h:0,win:[10,21],x:30,d:()=>'机车 · Mini · 保时捷',line:'',shop:['car']},
+ {id:'testDrive',loc:'cars',n:'试驾超跑',h:1,win:[10,20],x:54,d:()=>'心情+10 名望+1（每天一次）',line:'销售在副驾抓紧了扶手。我笑着说：放心，我只是开得像有钱人。',need:s=>s.testDrive===s.day&&'今天试驾过了',run:s=>{add('mood',10);add('fame',1);s.testDrive=s.day}},
+ {id:'carsBack',loc:'cars',n:'回到卡丁车场',h:0,win:[10,22],x:10,d:()=>'离开车行',line:'',go:'kart'},
+ {id:'ownRace',loc:'kart',n:'开自己的车上赛道',h:2,win:[12,20],x:66,d:()=>'名望+3 心情+12 精力-10',line:'自己的车，自己的赛道。看台上有人举起手机——明天的热搜，是我。',need:s=>!hasCar()?'先去隔壁 4S 店买辆车':s.energy<10&&'精力不足',run:s=>{add('fame',3);add('mood',12);add('energy',-10)}},
  {id:'tart',loc:'kitchen',n:'烤葡式蛋挞',h:2,win:[8,18],x:30,d:()=>'¥60 甜点+1 精力-10',line:'老板说我烤的蛋挞卖得最快。他不知道，我偷偷多放了一勺糖。',need:s=>s.energy<10&&'精力不足',run:s=>{add('money',60);add('sweets',1);add('energy',-10)}},
  {id:'grind',loc:'kitchen',n:'偷学咖啡师',h:1,win:[8,20],x:62,d:()=>'才艺+1 精力-4',line:'手冲、压粉、拉花——技多不压身。',need:s=>s.energy<4&&'精力不足',run:s=>{add('talent',1);add('energy',-4)}},
  {id:'nap',loc:'kitchen',n:'员工间打个盹',h:1,win:[8,21],x:86,d:()=>'精力+8',line:'十五分钟的盹，值一百块的面膜。',run:s=>{add('energy',8)}},
@@ -792,13 +821,13 @@ const ICONS={
  apple:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5M12 7c0-2 1-4 3-4',shake:'M8 3h8l-1 18H9zM7 7h10M12 3V1',
  yoga:'M12 4a2 2 0 1 0 0 .1M12 7v6M6 10l6 3 6-3M8 21l4-8 4 8',laundry:'M4 3h16v18H4zM4 7h16M12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8M7 5h.01',
  buyFruit:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5',buyProtein:'M7 6h10v14H7zM9 3h6v3H9zM9 11h6',
- toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
+ toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',wardrobe:'M5 3h14v18H5zM12 3v18M9 11v2M15 11v2',makeupOn:'M9 3h6v5H9zM8 8h8l-1 13H9z',to4s:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2M6 14h.01M18 14h.01',carShop:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2',testDrive:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 12l5-3M12 21v-6',carsBack:'M4 21V4h16v17M9 21v-7h6v7',ownRace:'M4 20l4-14h8l4 14M12 8v3M12 14v3',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
  toDine:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineSolo:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineKiki:'M12 20s-7-4-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 6-7 10-7 10',dineManner:'M4 12h16M6 12a6 6 0 0 1 12 0M12 6V4M3 16h18',dineBack:'M4 21V4h16v17M9 21v-7h6v7',
  toPet:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petCat:'M5 20V9l3-4 2 4h4l2-4 3 4v11zM9 13h.01M15 13h.01M10 16q2 1 4 0',petWalk:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petPhoto:'M4 7h4l2-3h4l2 3h4v13H4zM12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8',petBack:'M4 21V4h16v17M9 21v-7h6v7',pt:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',pilates:'M12 4a2 2 0 1 0 0 .1M4 20h16M7 20l5-9 5 9',sauna:'M8 4q2 2 0 4t0 4M12 4q2 2 0 4t0 4M16 4q2 2 0 4t0 4M4 18h16',toMall:'M4 21V4h16v17M9 21v-7h6v7',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3a3 3 0 0 1 3 3zM20 16a3 3 0 1 1-3-3a3 3 0 0 1 3 3z',mute:'M4 9v6h4l5 4V5L8 9zM17 9l4 6M21 9l-4 6'};
 const icon=k=>`<svg class="i" viewBox="0 0 24 24"><path d="${ICONS[k]||''}"/></svg>`;
 /* ---------- 状态 ---------- */
 let S,SNAP,busy=false;
-function fresh(){return{ch:1,day:1,t:8,energy:80,mood:70,money:150,charm:5,talent:0,fame:0,love:0,friend:10,gifts:0,sweets:0,food:0,fruit:2,protein:0,dirty:0,ateWell:false,appts:[],quests:{},calls:0,laundry:false,yoga:false,loveToday:false,giftLove:false,clean:false,phoned:false,talkedKiki:false,loc:null,lastLoc:'home',dist:1}}
+function fresh(){return{ch:1,day:1,t:8,energy:80,mood:70,money:150,charm:5,talent:0,fame:0,love:0,friend:10,gifts:0,sweets:0,food:0,fruit:2,protein:0,dirty:0,ateWell:false,appts:[],owned:['tweed','chainBag'],wear:{outfit:'tweed',bag:'chainBag'},makeup:0,quests:{},calls:0,laundry:false,yoga:false,loveToday:false,giftLove:false,clean:false,phoned:false,talkedKiki:false,loc:null,lastLoc:'home',dist:1}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify({S,SNAP}))}catch(e){}}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.S&&d.SNAP){S={...fresh(),...d.S};SNAP={...fresh(),...d.SNAP};return true}}catch(e){}return false}
 function add(k,v){S[k]=Math.max(0,Math.min(CAP[k],S[k]+v))}
@@ -844,7 +873,7 @@ $('#spots').onclick=async e=>{
   if(l.ch&&S.ch<l.ch){talk('su',`${l.n}，第 ${l.ch} 周才会对我开放。`);return}
   if(S.t<l.open[0]||S.t>=l.open[1]){talk('su',`${l.n}现在没开门（${hm(l.open[0])}–${hm(l.open[1])}）。`);return}
   const from=LOC[LOC[S.lastLoc]?.sub||S.lastLoc];
-  if(id!==S.lastLoc){const cross=from&&from.d!==l.d;S.t+=cross?1:.5;sfx('click');const d=l.dot;$('#walker').style.display='';$('#walker').style.left=d[0]+'%';$('#walker').style.top=d[1]+'%';busy=true;renderDash();await wait(900);busy=false;await apptTick();
+  if(id!==S.lastLoc){const cross=from&&from.d!==l.d;S.t+=cross?(hasCar()?.5:1):.5;sfx('click');const d=l.dot;$('#walker').style.display='';$('#walker').style.left=d[0]+'%';$('#walker').style.top=d[1]+'%';busy=true;renderDash();await wait(900);busy=false;await apptTick();
     if(cross)talk('su',`坐渡轮去了${DIST[l.d].n}（路上花了 1 小时）。`)}
   S.lastLoc=id;enterRoom(id);
 };
@@ -883,7 +912,7 @@ function leaveRoom(){S.loc=null;setTimeout(()=>window.actNavSync&&actNavSync());
 let suX=LOC.home.door;
 function renderRoom(){
   const id=S.loc,l=LOC[id];if(!id)return;
-  const bg=$('#roomBg');const src=`assets/room_${id}.jpg`;if(bg.dataset.src!==src){bg.dataset.src=src;bg.src=src;bg.onerror=()=>{bg.style.display='none'};bg.onload=()=>{bg.style.display=''}}
+  const bg=$('#roomBg');const src=`assets/room_${id}.jpg`;if(bg.dataset.src!==src){bg.dataset.src=src;delete bg.dataset.fb;bg.src=src;bg.onerror=()=>{const p=LOC[id].sub;if(p&&!bg.dataset.fb){bg.dataset.fb=1;bg.src=`assets/room_${p}.jpg`}else bg.style.display='none'};bg.onload=()=>{bg.style.display=''}}
   const g=CH[S.ch-1].g;$('#roomName').innerHTML=l.n+'<span style="opacity:.65;font-weight:500;letter-spacing:0;margin-left:10px">本周 '+Object.keys(g).map(k=>`${NAME[k]} ${S[k]}/${g[k]}${S[k]>=g[k]?' ✓':''}`).join(' · ')+'</span>';
   const npcs=npcsIn(id);
   const fx=fxOf(id);
@@ -956,6 +985,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function doAct(id,fast){
   const a=A.find(x=>x.id===id);if(!a||blocked(a))return false;
   if(a.sleep)return endDay(true);
+  if(a.shop){sfx('click');openShop(a.shop,a.n);return true}
+  if(a.wardrobe){sfx('click');openWardrobe();return true}
   if(a.go){sfx('click');suX=LOC[a.go].door;enterRoom(a.go);return true}
   if(a.call){S.t+=a.h;S.phoned=true;renderAll();await phoneCall(fast);if(S.t>=28)await endDay(false,fast);return true}
   busy=!fast;
@@ -1091,9 +1122,10 @@ async function guWeekCall(){
 async function doGuDate(a){
   const need=6+S.ch*7,first=!S.metGu,T=GUTALK[Math.min(GUTALK.length-1,Math.floor((S.ch-1)/3))];
   busy=true;setPose('toast');actSound('clink',1.6);await wait(1500);setPose(null);busy=false;
-  const tag=(k,v)=>`${NAME[k]} ${v}/${need}${v>=need?' ✓':' ✗'}`;
-  const i=await talk('gu',first?T.a:`${T.a}`,[['聊画展和音乐',tag('talent',S.talent)],['撒个娇，用眼神说话',tag('charm',S.charm)],['聊名流圈的八卦',tag('fame',S.fame)]]);
-  const k=['talent','charm','fame'][i],ok=S[k]>=need,b={...S};
+  const sty=styleScore(),val=k=>S[k]+(k==='charm'?sty:0);
+  const tag=(k,v)=>`${NAME[k]} ${v}${k==='charm'&&sty?'（含穿搭 '+sty+'）':''}/${need}${v>=need?' ✓':' ✗'}`;
+  const i=await talk('gu',first?T.a:`${T.a}`,[['聊画展和音乐',tag('talent',val('talent'))],['撒个娇，用眼神说话',tag('charm',val('charm'))],['聊名流圈的八卦',tag('fame',val('fame'))]]);
+  const k=['talent','charm','fame'][i],ok=val(k)>=need,b={...S};
   add('love',ok?10:5);add('fame',ok?3:1);add('mood',ok?6:-2);add('energy',-8);S.loveToday=true;S.metGu=true;S.t+=a.h;a.done=true;
   renderAll();pops(b);save();
   await talk('gu',ok?T.ok:'「……嗯。」他礼貌地笑了笑，看了两次表。',null,diffText(b)+(ok?'':`（${NAME[k]}还不够 ${need}，好感只涨了一点）`));
@@ -1286,7 +1318,7 @@ const SONGS={
  church:{bpm:56,swing:0,seed:41,prog:[CC(36,'maj7'),CC(45,'m7'),CC(41,'maj9'),CC(43,'sus'),CC(36,'maj7'),CC(40,'m7'),CC(41,'maj9'),CC(43,'sus')],comp:'organ',bass:'long',drums:'',lead:'vib',mp:MP_S},
 };
 Object.values(SONGS).forEach(s=>s._mel=makeMel(s));
-const SONGMAP={home:'home',cafe:'cafe',kitchen:'kitchen',mall:'chic',gym:'gym',tea:'tea',dine:'dine',pet:'pet',florist:'florist',market:'market',academy:'academy',elite:'elite',church:'church',golf:'sport',kart:'kart',bar:'bar',party:'party'};
+const SONGMAP={home:'home',cafe:'cafe',kitchen:'kitchen',mall:'chic',gym:'gym',tea:'tea',dine:'dine',pet:'pet',cars:'kart',florist:'florist',market:'market',academy:'academy',elite:'elite',church:'church',golf:'sport',kart:'kart',bar:'bar',party:'party'};
 function play(sg,st,t0){const N=sg.prog.length,bar=Math.floor(st/8)%N,b=st%8,c=sg.prog[bar],E=60/sg.bpm/2,t=t0+((b%2)?E*sg.swing:0),R=c.r;
   if(sg.comp==='ep'&&sg.cs.includes(b))c.v.forEach((m,i)=>ep(t+i*.014,m,E*1.6,.032));
   if(sg.comp==='pluck'&&sg.cs.includes(b))c.v.forEach((m,i)=>pluck(t+i*.008,m,E*.8,.034));
@@ -1326,6 +1358,59 @@ document.addEventListener('pointerdown',()=>{musicStart()},{once:false});
 $('#musicBtn').onclick=e=>{e.stopPropagation();musicStart();musicToggle()};
 
 
+
+/* ---------- 精品店 / 衣柜 / 车行 ---------- */
+const ITEMS={
+ tweed:{c:'outfit',n:'粉色粗花呢套装',p:0,st:0,col:'#e9a9b8'},
+ tennis:{c:'outfit',n:'奶油色网球裙',p:260,st:2,col:'#f3ead8'},
+ slip:{c:'outfit',n:'香槟真丝吊带裙',p:380,st:3,col:'#ead2a4'},
+ suit:{c:'outfit',n:'白色西装套裙',p:520,st:4,col:'#f7f4ee'},
+ gown:{c:'outfit',n:'酒红丝绒晚礼服',p:1200,st:8,col:'#7a1830'},
+ goldWatch:{c:'watch',n:'金色小方表',p:680,st:2,col:'#d8b36a'},
+ diaWatch:{c:'watch',n:'满钻女士腕表',p:3200,st:6,col:'#e8eef5'},
+ pearl:{c:'jewel',n:'珍珠项链',p:300,st:1,col:'#f4efe6'},
+ diaEar:{c:'jewel',n:'钻石耳钉',p:900,st:3,col:'#dfe9f3'},
+ emerald:{c:'jewel',n:'祖母绿戒指',p:2600,st:5,col:'#2f8a6a'},
+ chainBag:{c:'bag',n:'奶油菱格链条包',p:0,st:0,col:'#efe3cf'},
+ mini:{c:'bag',n:'粉色迷你手袋',p:560,st:2,col:'#f2b8c8'},
+ birkin:{c:'bag',n:'鳄鱼纹铂金包',p:4800,st:7,col:'#a8743c'},
+ lipstick:{c:'makeup',n:'大牌口红',p:120,st:0,qty:1,col:'#b3203a'},
+ makeupBox:{c:'makeup',n:'全妆礼盒',p:300,st:0,qty:3,col:'#f1c9b9'},
+ moto:{c:'car',n:'粉色复古机车',p:1800,st:2,col:'#f19ab0'},
+ miniCar:{c:'car',n:'奶油色 Mini',p:2600,st:3,col:'#efe6d2'},
+ porsche:{c:'car',n:'玫瑰金保时捷',p:15000,st:8,col:'#d9a48a'},
+};
+const CATS={outfit:'服装',watch:'名表',jewel:'首饰',bag:'包包',makeup:'美妆',car:'座驾'};
+const SLOTS=['outfit','watch','jewel','bag','car'];
+function owned(id){return (S.owned||[]).includes(id)}
+function styleScore(){return SLOTS.reduce((t,k)=>t+((S.wear&&S.wear[k]&&ITEMS[S.wear[k]])?ITEMS[S.wear[k]].st:0),0)+(S.madeUp===S.day?5:0)}
+function hasCar(){return (S.owned||[]).some(i=>ITEMS[i]&&ITEMS[i].c==='car')}
+function openShop(cats,title){
+  let cur=cats[0];
+  const draw=()=>{
+    const list=Object.entries(ITEMS).filter(([id,it])=>it.c===cur&&it.p>0).map(([id,it])=>{
+      const has=owned(id)&&it.c!=='makeup';
+      return `<div class="si${has?' has':''}"><i style="background:${it.col}"></i><b>${it.n}</b><span>${it.c==='makeup'?'用一次：当天魅力 +5 · 内含 '+it.qty+' 份':'穿搭分 +'+it.st+(it.c==='car'?' · 跨城区只要半小时':'')}</span><button data-buy="${id}" ${has?'disabled':''}>${has?'已拥有':'¥'+it.p}</button></div>`}).join('');
+    $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>${title}</h3><div class="tabs">${cats.map(c=>`<button data-cat="${c}" class="${c===cur?'on':''}">${CATS[c]}</button>`).join('')}</div><div class="sgrid">${list}</div><p class="sm">存款 ¥${S.money} · 当前穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
+    $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
+    $('#plan').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cur=b.dataset.cat;draw()});
+    $('#plan').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buyItem(b.dataset.buy).then(draw));
+  };draw();$('#plan').classList.add('show');
+}
+async function buyItem(id){const it=ITEMS[id];if(S.money<it.p){toast('钱不够');return}
+  const b={...S};add('money',-it.p);S.owned=S.owned||[];S.wear=S.wear||{};
+  if(it.c==='makeup'){S.makeup=(S.makeup||0)+it.qty}else{S.owned.push(id);S.wear[it.c]=id;add('mood',5);if(id==='porsche')add('fame',8)}
+  actSound('register',.9);renderAll();pops(b);save();toast(it.c==='makeup'?`买了${it.n}，美妆 +${it.qty}`:`买下${it.n}，已经穿戴上`);setOutfit()}
+function openWardrobe(){
+  const row=k=>{const mine=Object.entries(ITEMS).filter(([id,it])=>it.c===k&&(it.p===0||owned(id)));
+    return `<div class="wr"><em>${CATS[k]}</em>${mine.length?mine.map(([id,it])=>`<button data-wear="${k}:${id}" class="${S.wear&&S.wear[k]===id?'on':''}"><i style="background:${it.col}"></i>${it.n}${it.st?' +'+it.st:''}</button>`).join(''):'<span class="sm">还没有，去名店城或车行看看</span>'}${k!=='outfit'&&k!=='car'&&S.wear&&S.wear[k]?`<button data-wear="${k}:" class="off">摘下</button>`:''}</div>`};
+  $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>我的衣柜</h3>${['outfit','watch','jewel','bag','car'].map(row).join('')}<p class="sm">美妆存货 ${S.makeup||0} 份 · 穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
+  $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
+  $('#plan').querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.wear.split(':');S.wear=S.wear||{};S.wear[k]=id||null;save();setOutfit();renderAll();openWardrobe()});
+  $('#plan').classList.add('show');
+}
+const OUTFIT_OK={};['tennis','slip','suit','gown'].forEach(k=>{const im=new Image();im.onload=()=>{OUTFIT_OK[k]=1;setOutfit()};im.src=`assets/su_${k}.png`});
+function setOutfit(){const o=S&&S.wear&&S.wear.outfit;IMG.su=o&&OUTFIT_OK[o]?`assets/su_${o}.png`:'assets/sutang.png';const e=$('#su');if(e&&!e.classList.contains('busy')){e.src=IMG.su;const c=$('#suCast');if(c)c.src=IMG.su}}
 /* ---------- 做事时：人物换成真实动作姿势 ---------- */
 const POSE={clean:'mop',wipe:'mop',bake:'bake',tart:'bake',apple:'eat',sample:'eat',shake:'drink',yoga:'yoga',pilates:'yoga',laundry:'laundry',phone:'phone',
  work:'barista',night:'barista',latte:'barista',grind:'barista',golfLesson:'golf',caddie:'golf',golfGu:'golf',bartend:'bartend',pt:'dumbbell',
@@ -1402,7 +1487,7 @@ $('#restartBtn').onclick=async e=>{e.stopPropagation();if(busy)return;const i=aw
 $('#planBtn').onclick=e=>{e.stopPropagation();openPlan()};
 $('#themeBtn').onclick=e=>{e.stopPropagation();const i=(THEMES.indexOf($('#stage').dataset.theme)+1)%THEMES.length;$('#stage').dataset.theme=THEMES[i];try{localStorage.setItem('haomen-theme',THEMES[i])}catch(e){}};
 renderMusicBtn();
-if(load()){renderAll();setTimeout(()=>{if(!busy&&!S.won)guWeekCall()},1200)}else newGame();
+if(load()){S.owned=S.owned||['tweed','chainBag'];S.wear=S.wear||{outfit:'tweed',bag:'chainBag'};setOutfit();renderAll();setTimeout(()=>{if(!busy&&!S.won)guWeekCall()},1200)}else newGame();
 </script>
 </body>
 </html>
