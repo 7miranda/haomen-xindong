@@ -538,6 +538,7 @@ h1,h3,#quest h3,#cut .card h1,#roomName,.act .an,#talk .who,#cut .bar .who{font-
 #plan .wtile.on{border:2px solid var(--g2);box-shadow:0 0 0 3px rgba(241,211,155,.18)}
 #plan .wtile span{min-height:0}
 #plan .wempty{grid-column:1/-1;padding:40px;text-align:center;color:var(--ink2);border:1px dashed var(--rg2);border-radius:14px}
+#clockTop .ct-tired{padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;background:#f0c36a;color:#3e0f20}#clockTop .ct-tired.l2{background:#e0485f;color:#fff;animation:hotb .8s ease-in-out infinite alternate}
 </style>
 </head>
 <body>
@@ -681,8 +682,19 @@ const DLG={
 };
 
 /* ---------- 地点与活动 ---------- */
-const wage=s=>180+Math.floor(s.charm/10)*20;
+const wage=s=>240+Math.floor(s.charm/10)*20;
+const pay=n=>Math.round(n*payScale());
 const payScale=()=>1+0.15*((S&&S.ch||1)-1);
+/* ---------- 疲劳：精力过低时属性打折，后几周更严重 ---------- */
+const tiredLevel=()=>S.energy>=25?0:S.energy>=12?1:2;
+const hardTier=()=>S.ch>=8?2:S.ch>=4?1:0;
+function tiredMul(){const l=tiredLevel(),h=hardTier();if(!l)return 1;if(l===1)return h?0.85:1;return h===2?0.6:h===1?0.75:0.9}
+async function fatigueCheck(a){
+  if(a.sleep||S.energy>=25)return;const gained=a._eGain>0;if(gained)return;
+  const l=tiredLevel(),h=hardTier();
+  if(S.warnDay!==S.day){S.warnDay=S.day;await talk('su',`精力只剩 ${S.energy} 了……眼下有点发青。\n${h?'再这样硬撑，脸色、状态都会垮，约会时魅力要打折扣。':'还是早点回家睡觉，或者去补个美容觉、吃点东西吧。'}`);}
+  if(l===2&&h){const b={...S};add('charm',-h);add('mood',-3);if(h===2)add('fame',-1);renderAll();pops(b);save();toast(`透支了！魅力 -${h}${h===2?'，名望 -1':''}，心情 -3`)}
+}
 const RANK=['咖啡店店员','画廊常客','晚宴女伴','名媛新秀','海湾名媛','准靳太太'];
 const rank=s=>RANK[Math.min(5,Math.floor((s.fame+s.love)/36))];
 const LOC={
@@ -718,9 +730,9 @@ const A=[
  {id:'etiquette',loc:'home',ic:'🪞',n:'对镜练仪态',h:2,win:[8,20],x:21,d:()=>'才艺+2 魅力+1 精力-8',line:'下巴再抬高十五度——这是豪门的角度。',need:s=>s.energy<8&&'精力不足',run:s=>{add('talent',2);add('charm',1);add('energy',-8);add('mood',-2)}},
  {id:'mask',loc:'home',ic:'🧖',n:'敷面膜',h:1,win:[18,28],x:21,d:()=>'魅力+1 心情+4',line:'这张脸，是我最值钱的资产。',run:s=>{add('charm',1);add('mood',4)}},
  {id:'sleep',loc:'home',ic:'🌙',n:'睡觉（结束今天）',h:0,win:[0,28],x:54,d:()=>'随时可睡，早睡恢复更多',line:'',sleep:true},
- {id:'work',loc:'cafe',ic:'☕',n:'上白班',h:4,win:[8,14],x:62,d:s=>`¥${wage(s)} 精力-20`,line:'微笑服务。小费，另算。',need:s=>s.energy<20&&'精力不足',
+ {id:'work',loc:'cafe',ic:'☕',n:'上白班',h:4,win:[8,14],x:62,d:s=>`¥${pay(wage(s))} 精力-20`,line:'微笑服务。小费，另算。',need:s=>s.energy<20&&'精力不足',
   run:s=>{const low=s.mood<25,tip=low?0:10+Math.floor(Math.random()*4)*10;add('money',Math.round(wage(s)*(low?.5:1))+tip);add('energy',-20);add('mood',-6);return low?'心情太差，笑得太假，小费少了一半。':`今天的小费：¥${tip}。`}},
- {id:'night',loc:'cafe',ic:'🌃',n:'上晚班',h:4,win:[16,19],x:62,d:s=>`¥${Math.round(wage(s)*.9)} 精力-24`,line:'再忍忍。以后是别人给我端咖啡。',need:s=>s.energy<24&&'精力不足',
+ {id:'night',loc:'cafe',ic:'🌃',n:'上晚班',h:4,win:[16,19],x:62,d:s=>`¥${pay(wage(s)*.9)} 精力-24`,line:'再忍忍。以后是别人给我端咖啡。',need:s=>s.energy<24&&'精力不足',
   run:s=>{const low=s.mood<25;add('money',Math.round(wage(s)*.9*(low?.5:1)));add('energy',-24);add('mood',-8)}},
  {id:'latte',loc:'cafe',ic:'💘',n:'给靳野做拉花',h:1,win:[8,11],x:62,d:()=>'好感+2 心情+5',line:'拉花画颗心，他会以为是巧合。',need:s=>s.ch<2?'第 2 周解锁':s.energy<4&&'精力不足',run:s=>{add('love',2);add('mood',5);add('energy',-4);s.loveToday=true}},
  {id:'dress',loc:'mall',ic:'👗',n:'逛精品店',h:0,win:[10,21],x:22,d:()=>'服装 名表 首饰 包包 美妆',line:'',shop:['outfit','watch','jewel','bag','makeup']},
@@ -757,7 +769,7 @@ const A=[
  /* 花坊 → 猫咖萌宠屋 */
  {id:'toPet',loc:'florist',n:'去隔壁猫咖',h:0,win:[9,20],x:86,d:()=>'撸猫、看宠物',line:'',go:'pet'},
  {id:'petCat',loc:'pet',n:'撸猫',h:1,win:[9,21],x:34,d:()=>'¥30 心情+10',line:'一只布偶猫跳上我的膝盖，打着呼噜。今天的烦恼，清零。',need:s=>s.money<30&&'钱不够',run:s=>{add('money',-30);add('mood',10)}},
- {id:'petWalk',loc:'pet',n:'遛狗打工',h:2,win:[9,18],x:56,d:()=>'¥80 精力-12 心情+3',line:'三只柯基，一根牵引绳。路过的太太问我是哪家的——是有钱人家的狗。',need:s=>s.energy<12&&'精力不足',run:s=>{add('money',80);add('energy',-12);add('mood',3)}},
+ {id:'petWalk',loc:'pet',n:'遛狗打工',h:2,win:[9,18],x:56,d:()=>`¥${pay(120)} 精力-12 心情+3`,line:'三只柯基，一根牵引绳。路过的太太问我是哪家的——是有钱人家的狗。',need:s=>s.energy<12&&'精力不足',run:s=>{add('money',120);add('energy',-12);add('mood',3)}},
  {id:'petPhoto',loc:'pet',n:'拍萌宠照发朋友圈',h:.5,win:[9,21],x:74,d:()=>'名望+1 心情+3（每天一次）',line:'「今天的小可爱」——点赞的人里，有三个富太太。',need:s=>s.petPhoto&&'今天发过了',run:s=>{add('fame',1);add('mood',3);s.petPhoto=true}},
  {id:'petBack',loc:'pet',n:'回到花坊',h:0,win:[9,22],x:10,d:()=>'离开猫咖',line:'',go:'florist'},
  {id:'pt',loc:'gym',n:'私教训练',h:2,win:[8,20],x:30,d:()=>'¥120 魅力+3 心情+4 精力-16',line:'教练说我的臀腿线条进步了——这条裙子终于能穿了。',need:s=>s.money<120?'钱不够':s.energy<16&&'精力不足',run:s=>{add('money',-120);add('charm',3);add('mood',4);add('energy',-16)}},
@@ -768,7 +780,7 @@ const A=[
  {id:'bake',loc:'home',n:'在家烘焙',h:2,win:[8,22],x:84,d:()=>'食材-1 甜点+1 心情+6',line:'黄油、糖、一点心机——烤出来的曲奇，最能收买人心。',need:s=>s.food<1?'没有食材，去南湾超市买':s.energy<6&&'精力不足',run:s=>{add('food',-1);add('sweets',1);add('mood',6);add('energy',-6)}},
  {id:'phone',loc:'home',n:'打给 Kiki',h:0.5,win:[8,23],x:30,d:()=>'友情+3 心情+3（每天一次）',line:'「宝，今天又遇到什么奇葩了？」——和 Kiki 煲电话粥，是我的充电方式。',need:s=>s.phoned&&'今天已经打过了',run:s=>{add('friend',3);add('mood',3);s.phoned=true}},
  /* 咖啡馆 */
- {id:'wipe',loc:'cafe',n:'擦桌收银',h:1,win:[8,21],x:40,d:()=>'¥45 精力-6',line:'擦桌子的时候，顺便听听隔壁桌太太们的八卦。',need:s=>s.energy<6&&'精力不足',run:s=>{add('money',45);add('energy',-6);add('mood',-2)}},
+ {id:'wipe',loc:'cafe',n:'擦桌收银',h:1,win:[8,21],x:40,d:()=>`¥${pay(60)} 精力-6`,line:'擦桌子的时候，顺便听听隔壁桌太太们的八卦。',need:s=>s.energy<6&&'精力不足',run:s=>{add('money',60);add('energy',-6);add('mood',-2)}},
  {id:'toKitchen',loc:'cafe',n:'进入后厨',h:0,win:[8,22],x:72,d:()=>'去后厨看看',line:'',go:'kitchen'},
  /* 健身房：更多项目 */
  {id:'gymYoga',loc:'gym',n:'流瑜伽课',h:1,win:[7,21],x:20,d:()=>'¥50 魅力+1 心情+6',line:'老师说我的肩颈终于打开了——其实是终于放下了一点戒心。',need:s=>s.money<50&&'钱不够',run:s=>{add('money',-50);add('charm',1);add('mood',6);add('energy',-5)}},
@@ -810,17 +822,17 @@ const A=[
  {id:'testDrive',loc:'cars',n:'试驾超跑',h:1,win:[10,20],x:54,d:()=>'心情+10 名望+1（每天一次）',line:'销售在副驾抓紧了扶手。我笑着说：放心，我只是开得像有钱人。',need:s=>s.testDrive===s.day&&'今天试驾过了',run:s=>{add('mood',10);add('fame',1);s.testDrive=s.day}},
  {id:'carsBack',loc:'cars',n:'回到卡丁车场',h:0,win:[10,22],x:10,d:()=>'离开车行',line:'',go:'kart'},
  {id:'ownRace',loc:'kart',n:'开自己的车上赛道',h:2,win:[12,20],x:66,d:()=>'名望+3 心情+12 精力-10',line:'自己的车，自己的赛道。看台上有人举起手机——明天的热搜，是我。',need:s=>!hasCar()?'先去隔壁 4S 店买辆车':s.energy<10&&'精力不足',run:s=>{add('fame',3);add('mood',12);add('energy',-10)}},
- {id:'tart',loc:'kitchen',n:'烤葡式蛋挞',h:2,win:[8,18],x:30,d:()=>'¥60 甜点+1 精力-10',line:'老板说我烤的蛋挞卖得最快。他不知道，我偷偷多放了一勺糖。',need:s=>s.energy<10&&'精力不足',run:s=>{add('money',60);add('sweets',1);add('energy',-10)}},
+ {id:'tart',loc:'kitchen',n:'烤葡式蛋挞',h:2,win:[8,18],x:30,d:()=>`¥${pay(120)} 甜点+1 精力-10`,line:'老板说我烤的蛋挞卖得最快。他不知道，我偷偷多放了一勺糖。',need:s=>s.energy<10&&'精力不足',run:s=>{add('money',120);add('sweets',1);add('energy',-10)}},
  {id:'grind',loc:'kitchen',n:'偷学咖啡师',h:1,win:[8,20],x:62,d:()=>'才艺+1 精力-4',line:'手冲、压粉、拉花——技多不压身。',need:s=>s.energy<4&&'精力不足',run:s=>{add('talent',1);add('energy',-4)}},
  {id:'nap',loc:'kitchen',n:'员工间打个盹',h:1,win:[8,21],x:86,d:()=>'精力+8',line:'十五分钟的盹，值一百块的面膜。',run:s=>{add('energy',8)}},
  {id:'toFront',loc:'kitchen',n:'回到前厅',h:0,win:[8,22],x:10,d:()=>'回咖啡馆前厅',line:'',go:'cafe'},
  /* 花店 */
- {id:'bouquet',loc:'florist',n:'包花束打工',h:3,win:[9,17],x:46,d:()=>'¥120 心情+4 友情+2',line:'玫瑰要剪斜口，客人要哄开心。',need:s=>s.energy<14&&'精力不足',run:s=>{add('money',120);add('mood',4);add('energy',-14);if(kikiHere())add('friend',2)}},
+ {id:'bouquet',loc:'florist',n:'包花束打工',h:3,win:[9,17],x:46,d:()=>`¥${pay(180)} 心情+4 友情+2`,line:'玫瑰要剪斜口，客人要哄开心。',need:s=>s.energy<14&&'精力不足',run:s=>{add('money',180);add('mood',4);add('energy',-14);if(kikiHere())add('friend',2)}},
  {id:'ikebana',loc:'florist',n:'学插花',h:2,win:[9,18],x:70,d:()=>'¥60 才艺+3 魅力+1',line:'豪门太太的客厅里，从来不缺一盆好花。',need:s=>s.money<60?'钱不够':s.energy<8&&'精力不足',run:s=>{add('money',-60);add('talent',3);add('charm',1);add('energy',-8)}},
  {id:'flowers',loc:'florist',n:'挑一束花',h:0,win:[9,20],x:20,d:()=>'¥100 礼物+1（比名店城便宜）',line:'Kiki 给我打了八折，还附送一张手写卡。',need:s=>s.money<100&&'钱不够',run:s=>{add('money',-100);add('gifts',1)}},
  /* 超市 */
  {id:'groceries',loc:'market',n:'采购烘焙食材',h:1,win:[8,21],x:30,d:()=>'¥40 食材+2',line:'黄油、面粉、草莓——还有一盒打折的车厘子。',need:s=>s.money<40&&'钱不够',run:s=>{add('money',-40);add('food',2)}},
- {id:'stock',loc:'market',n:'理货兼职',h:3,win:[8,19],x:60,d:()=>'¥110 精力-14',line:'整理货架很治愈。一排排对齐，像我的人生计划。',need:s=>s.energy<14&&'精力不足',run:s=>{add('money',110);add('energy',-14);add('mood',-2)}},
+ {id:'stock',loc:'market',n:'理货兼职',h:3,win:[8,19],x:60,d:()=>`¥${pay(180)} 精力-14`,line:'整理货架很治愈。一排排对齐，像我的人生计划。',need:s=>s.energy<14&&'精力不足',run:s=>{add('money',180);add('energy',-14);add('mood',-2)}},
  {id:'sample',loc:'market',n:'逛试吃摊',h:1,win:[9,21],x:84,d:()=>'心情+4（免费）',line:'免费的芝士和红酒——穷人的米其林。',run:s=>{add('mood',4);add('energy',-2)}},
  /* 教堂 */
  {id:'pray',loc:'church',n:'安静祈祷',h:1,win:[7,19],x:50,d:()=>'心情+8',line:'愿主原谅我所有的小算盘……至少原谅一半。',run:s=>{add('mood',8)}},
@@ -831,13 +843,13 @@ const A=[
  {id:'french',loc:'academy',n:'法语课',h:2,win:[9,19],x:82,d:()=>'¥100 才艺+3 魅力+1',line:'Enchantée——说出口的那一刻，我觉得自己贵了三倍。',need:s=>s.money<100?'钱不够':s.energy<6&&'精力不足',run:s=>{add('money',-100);add('talent',3);add('charm',1);add('energy',-6)}},
  /* 高尔夫 */
  {id:'golfLesson',loc:'golf',n:'高尔夫课',h:2,win:[8,16],x:46,d:()=>'¥150 才艺+2 名望+2',line:'挥杆的姿势要优雅——反正球去哪儿不重要。',need:s=>s.money<150?'钱不够':s.energy<8&&'精力不足',run:s=>{add('money',-150);add('talent',2);add('fame',2);add('energy',-8)}},
- {id:'caddie',loc:'golf',n:'当球童打工',h:3,win:[8,15],x:18,d:()=>'¥140 名望+1 精力-16',line:'背着球包跟在大佬身后，他们聊的都是并购案。',need:s=>s.energy<16&&'精力不足',run:s=>{add('money',140);add('fame',1);add('energy',-16)}},
+ {id:'caddie',loc:'golf',n:'当球童打工',h:3,win:[8,15],x:18,d:()=>`¥${pay(225)} 名望+1 精力-16`,line:'背着球包跟在大佬身后，他们聊的都是并购案。',need:s=>s.energy<16&&'精力不足',run:s=>{add('money',225);add('fame',1);add('energy',-16)}},
  {id:'golfGu',loc:'golf',n:'陪靳野打球',h:2,win:[9,16],x:70,d:()=>'好感+4 心情+6',line:'我故意打偏三杆，让他手把手教我。',need:s=>!guHere()&&'他周末才来球会',run:s=>{add('love',4);add('mood',6);add('energy',-8);s.loveToday=true}},
  /* 卡丁车 */
  {id:'kart',loc:'kart',n:'开卡丁车',h:2,win:[12,20],x:48,d:()=>'¥120 心情+20',line:'油门踩到底的时候，什么豪门、什么计划，全都甩在身后。',need:s=>s.money<120?'钱不够':s.energy<12&&'精力不足',run:s=>{add('money',-120);add('mood',20);add('energy',-12)}},
  {id:'kartGu',loc:'kart',n:'和靳野飙车',h:2,win:[12,20],x:66,d:()=>'¥60 好感+4 心情+12',line:'最后一个弯道我让了他半个车身——男人嘛，要给面子。',need:s=>!guHere()?'他周末才来车场':s.money<60&&'钱不够',run:s=>{add('money',-60);add('love',4);add('mood',12);add('energy',-12);s.loveToday=true}},
  /* 码头酒吧 */
- {id:'bartend',loc:'bar',n:'调酒兼职',h:4,win:[18,20],x:50,d:()=>'¥220 名望+1 精力-24',line:'一杯 Negroni，换一个富二代的名片。',need:s=>s.energy<22&&'精力不足',run:s=>{add('money',220);add('fame',1);add('energy',-24);add('mood',-6)}},
+ {id:'bartend',loc:'bar',n:'调酒兼职',h:4,win:[18,20],x:50,d:()=>`¥${pay(320)} 名望+1 精力-24`,line:'一杯 Negroni，换一个富二代的名片。',need:s=>s.energy<22&&'精力不足',run:s=>{add('money',320);add('fame',1);add('energy',-24);add('mood',-6)}},
  {id:'drinkKiki',loc:'bar',n:'和 Kiki 喝一杯',h:2,win:[19,22],x:72,d:()=>'¥80 心情+15 友情+6',line:'Kiki 说：「你不用在我面前装名媛。」——那一刻我差点哭了。',need:s=>!kikiHere()?'Kiki 晚上八点后才来':s.money<80&&'钱不够',run:s=>{add('money',-80);add('mood',15);add('friend',6);add('energy',-6)}},
  {id:'heir',loc:'bar',n:'结识富二代',h:2,win:[19,22],x:26,d:()=>'¥50 名望+2',line:'聊游艇、聊马术、聊他爸——三个话题就够了。',need:s=>s.charm<30?'魅力 30 才能搭上话':s.money<50&&'钱不够',run:s=>{add('money',-50);add('fame',2);add('energy',-6)}},
  /* 天台派对 */
@@ -1087,13 +1099,13 @@ async function doAct(id,fast){
       su.classList.add('busy','act-'+P.a);const steps=Math.max(5,Math.round(a.h*2)),dur=steps*.6;actSound(P.s,dur);
       $('#prog').style.display='block';$('#progT').textContent=a.n+'中…';const pb=$('#progB');pb.style.transition='none';pb.style.width='0';void pb.offsetWidth;pb.style.transition=`width ${dur}s linear`;pb.style.width='100%';
       const t0=S.t;for(let i=1;i<=steps;i++){await wait(600);S.t=t0+a.h*i/steps;renderDial();renderClock()}S.t=t0;$('#prog').style.display='none';su.classList.remove('busy','act-'+P.a);pr.remove();setPose(null)}}
-  const b={...S};const note=a.run(S)||'';S.t+=a.h;if(a._with==='kiki'){add('friend',3);S.talkedKiki=true}if(a._with==='gu'){add('love',4);S.loveToday=true}a._with=null;
+  const b={...S};const note=a.run(S)||'';S.t+=a.h;a._eGain=S.energy-b.energy;if(tiredLevel()===2&&hardTier()&&S.money>b.money){const cut=Math.round((S.money-b.money)*.3);add('money',-cut)}if(a._with==='kiki'){add('friend',3);S.talkedKiki=true}if(a._with==='gu'){add('love',4);S.loveToday=true}a._with=null;
   if(/golf/.test(id)&&owned('golfSet')&&id==='golfLesson')add('talent',2);if(['golf','riding'].includes(LOC[S.loc]?.sub||S.loc)&&owned('visor'))add('mood',4);if(id==='ownRace'&&owned('raceSuit'))add('fame',2);if(['kart','kartGu','ownRace'].includes(id)&&owned('helmet'))add('mood',5);{const dm=S.money-b.money;if(dm>0&&payScale()>1)add('money',Math.round(dm*(payScale()-1)));if(!fast){if(dm<0)actSound('register',.9);else if(dm>0)actSound('coins',.8)}}
   pops(b);renderAll();save();busy=false;if(!fast)sfx(S.money>b.money?'coin':'done');
   if(!fast){const show=S.ch>=2&&['date','giftLove','latte','gala'].includes(id)&&$(`[data-npc="gu"]`)&&Math.random()<.6;
     if(show)await talk('gu',{date:'下次……还能约你吗？',giftLove:'你怎么知道我喜欢这个？',latte:'今天的心……画歪了。故意的？',gala:'你今晚，比香槟还抢眼。'}[id],null,diffText(b));
     else await talk('su',note||a.line,null,diffText(b))}
-  if(!fast){questCheck(id);await apptTick();await maybeEncounter(id);await maybeCall()}
+  if(!fast){await fatigueCheck(a);questCheck(id);await apptTick();await maybeEncounter(id);await maybeCall()}
   if(S.t>=28)await endDay(false,fast);
   return true;
 }
@@ -1227,8 +1239,8 @@ async function guWeekCall(){
 async function doGuDate(a){
   const need=6+S.ch*7,first=!S.metGu,T=GUTALK[Math.min(GUTALK.length-1,Math.floor((S.ch-1)/3))];
   busy=true;setPose('toast');actSound('clink',1.6);await wait(1500);setPose(null);busy=false;
-  const sty=styleScore(),val=k=>S[k]+(k==='charm'?sty:0);
-  const tag=(k,v)=>`${NAME[k]} ${v}${k==='charm'&&sty?'（含穿搭 '+sty+'）':''}/${need}${v>=need?' ✓':' ✗'}`;
+  const sty=styleScore(),tm=tiredMul(),val=k=>Math.floor((S[k]+(k==='charm'?sty:0))*tm);
+  const tag=(k,v)=>`${NAME[k]} ${v}${k==='charm'&&sty?'（含穿搭 '+sty+'）':''}${tm<1?'（疲惫×'+Math.round(tm*100)+'%）':''}/${need}${v>=need?' ✓':' ✗'}`;
   const i=await talk('gu',first?T.a:`${T.a}`,[['聊画展和音乐',tag('talent',val('talent'))],['撒个娇，用眼神说话',tag('charm',val('charm'))],['聊名流圈的八卦',tag('fame',val('fame'))]]);
   const k=['talent','charm','fame'][i],ok=val(k)>=need,b={...S};
   add('love',ok?10:5);add('fame',ok?3:1);add('mood',ok?6:-2);add('energy',-8);S.loveToday=true;S.metGu=true;S.t+=a.h;a.done=true;
@@ -1301,7 +1313,8 @@ function nextTask(){
 }
 function renderClock(){
   const tod=S.t>=24?'凌晨':S.t<12?'上午':S.t<18?'下午':'晚上',n=nextTask();
-  $('#clockTop').innerHTML=`<span class="ct-t">${S.t<18&&S.t>=6?'☀':'☾'} 第${S.ch}周 · 周${DAYS[S.day-1]||'日'} <b>${hm(S.t)}</b> ${tod}</span>`+(n?`<span class="ct-n ${n.now?'hot':''}">${n.now?'⏰ 现在就去':'下一项'} · ${n.t} ${n.w}</span><button class="ct-go" data-go="${n.loc}">前往</button>`:'<span class="ct-n">今天没有安排，自由行动</span>');
+  const tl=tiredLevel();const tchip=tl?`<span class="ct-tired l${tl}">⚠ ${tl===2?'透支':'精力低'}${tiredMul()<1?' · 魅力打折':''}</span>`:'';
+  $('#clockTop').innerHTML=tchip+`<span class="ct-t">${S.t<18&&S.t>=6?'☀':'☾'} 第${S.ch}周 · 周${DAYS[S.day-1]||'日'} <b>${hm(S.t)}</b> ${tod}</span>`+(n?`<span class="ct-n ${n.now?'hot':''}">${n.now?'⏰ 现在就去':'下一项'} · ${n.t} ${n.w}</span><button class="ct-go" data-go="${n.loc}">前往</button>`:'<span class="ct-n">今天没有安排，自由行动</span>');
   document.querySelectorAll('.spot .pin').forEach(e=>e.remove());
   (S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===S.ch&&a.day===S.day).forEach(a=>{const sp=document.querySelector(`.spot[data-loc="${a.loc}"]`);if(sp)sp.insertAdjacentHTML('beforeend',`<div class="pin">📍 ${a.from}:00 ${a.kind==='gu'?'约会':a.kind==='meet'?'有约':'相亲'}</div>`)});
   if(n){const sp=document.querySelector(`.spot[data-loc="${n.loc}"]`);if(sp&&!sp.querySelector('.pin'))sp.insertAdjacentHTML('beforeend',`<div class="pin soft">★ 下一项</div>`)}
