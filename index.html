@@ -676,10 +676,15 @@ const LOC={
  dine:{n:'海港名店城 · 云端法餐厅',sub:'mall',open:[11,23],door:10},
  pet:{n:'晚香花坊 · 猫咖萌宠屋',sub:'florist',open:[9,21],door:10},
  cars:{n:'南湾卡丁车场 · 海湾超跑 4S 店',sub:'kart',open:[10,22],door:10},
+ sport:{n:'海港名店城 · 运动用品店',sub:'mall',open:[10,21],door:10},
+ spa:{n:'海港名店城 · 半岛 SPA',sub:'mall',open:[10,22],door:10},
+ riding:{n:'南湾高尔夫球会 · 马术俱乐部',sub:'golf',open:[8,18],door:10},
+ yacht:{n:'Pier 9 码头 · 海湾游艇会',sub:'bar',open:[16,27],door:10},
+ gallery:{n:'金冠会所 · 画廊拍卖行',sub:'elite',open:[14,22],door:10},
  market:{n:'南湾超市',d:2,open:[8,22],rect:[16,58,30,26],dot:[30,80],door:8},
  church:{n:'圣心教堂',d:2,open:[7,20],rect:[28,6,13,26],dot:[35,30],door:8},
  academy:{n:'雅韵进修学院',d:2,open:[9,21],rect:[46,8,22,24],dot:[57,30],door:8},
- golf:{n:'南湾高尔夫球会',d:2,open:[8,18],rect:[76,6,24,26],dot:[86,30],door:8,ch:3},
+ golf:{n:'南湾高尔夫球会',d:2,open:[8,18],rect:[76,6,24,26],dot:[86,30],door:8},
  kart:{n:'南湾卡丁车场',d:2,open:[12,22],rect:[62,37,34,20],dot:[80,55],door:8},
  bar:{n:'Pier 9 码头酒吧',d:2,open:[18,27],rect:[55,58,30,22],dot:[70,76],door:8},
  party:{n:'星空天台派对',d:2,open:[20,27],rect:[1,5,23,26],dot:[12,28],door:8,ch:4},
@@ -745,6 +750,25 @@ const A=[
  /* 咖啡馆 */
  {id:'wipe',loc:'cafe',n:'擦桌收银',h:1,win:[8,21],x:40,d:()=>'¥45 精力-6',line:'擦桌子的时候，顺便听听隔壁桌太太们的八卦。',need:s=>s.energy<6&&'精力不足',run:s=>{add('money',45);add('energy',-6);add('mood',-2)}},
  {id:'toKitchen',loc:'cafe',n:'进入后厨',h:0,win:[8,22],x:72,d:()=>'去后厨看看',line:'',go:'kitchen'},
+ {id:'toSport',loc:'mall',n:'去运动用品店',h:0,win:[10,20],x:66,d:()=>'高尔夫和赛车装备',line:'',go:'sport'},
+ {id:'sportShop',loc:'sport',n:'挑装备',h:0,win:[10,21],x:40,d:()=>'球杆 · 球服 · 赛车服 · 头盔',line:'',shop:['golf','race']},
+ {id:'sportBack',loc:'sport',n:'回到名店城',h:0,win:[10,22],x:10,d:()=>'离开',line:'',go:'mall'},
+ {id:'toSpa',loc:'mall',n:'去半岛 SPA',h:0,win:[10,21],x:72,d:()=>'放松、按摩',line:'',go:'spa'},
+ {id:'spaOil',loc:'spa',n:'精油全身按摩',h:2,win:[10,21],x:36,d:()=>'¥200 精力+25 心情+10 魅力+1',line:'技师的手法像在揉一块上好的面团。我睡着了两次。',need:s=>s.money<200&&'钱不够',run:s=>{add('money',-200);add('energy',25);add('mood',10);add('charm',1)}},
+ {id:'spaFace',loc:'spa',n:'贵妇面部护理',h:1,win:[10,21],x:60,d:()=>'¥160 魅力+2 心情+5',line:'敷上金箔面膜的那一刻，我觉得自己值这个价。',need:s=>s.money<160&&'钱不够',run:s=>{add('money',-160);add('charm',2);add('mood',5)}},
+ {id:'spaBack',loc:'spa',n:'回到名店城',h:0,win:[10,22],x:10,d:()=>'离开',line:'',go:'mall'},
+ {id:'toRiding',loc:'golf',n:'去马术俱乐部',h:0,win:[8,17],x:88,d:()=>'骑马、马场下午茶',line:'',go:'riding'},
+ {id:'rideLesson',loc:'riding',n:'马术课',h:2,win:[8,17],x:40,d:()=>'¥150 魅力+2 名望+1 精力-12',line:'坐直，脚跟往下压。马比男人好懂——你稳，它就稳。',need:s=>s.money<150?'钱不够':s.energy<12&&'精力不足',run:s=>{add('money',-150);add('charm',2);add('fame',1);add('energy',-12)}},
+ {id:'rideTea',loc:'riding',n:'马场看台下午茶',h:1.5,win:[14,17],x:64,d:()=>'¥80 名望+2（第 3 周起）',line:'看台上的太太们戴着宽檐帽，聊的是哪匹马、哪家的儿子。',need:s=>s.ch<3?'第 3 周开放':s.money<80&&'钱不够',run:s=>{add('money',-80);add('fame',2);add('mood',3)}},
+ {id:'ridingBack',loc:'riding',n:'回到球会',h:0,win:[8,18],x:10,d:()=>'离开',line:'',go:'golf'},
+ {id:'toYacht',loc:'bar',n:'去游艇会',h:0,win:[16,26],x:90,d:()=>'登船、看日落',line:'',go:'yacht'},
+ {id:'yachtSunset',loc:'yacht',n:'甲板看日落',h:1,win:[16,19],x:36,d:()=>'心情+10',line:'海风把头发吹乱了。没关系，乱也是一种贵。',run:s=>{add('mood',10)}},
+ {id:'yachtParty',loc:'yacht',n:'游艇派对',h:3,win:[19,24],x:62,d:()=>'¥120 名望+4 心情+8（第 3 周起）',line:'香槟、DJ、比基尼——我只负责站在船头，让所有镜头都对准我。',need:s=>s.ch<3?'第 3 周开放':s.money<120?'钱不够':s.energy<12&&'精力不足',run:s=>{add('money',-120);add('fame',4);add('mood',8);add('energy',-12)}},
+ {id:'yachtBack',loc:'yacht',n:'回到码头酒吧',h:0,win:[16,27],x:10,d:()=>'下船',line:'',go:'bar'},
+ {id:'toGallery',loc:'elite',n:'去画廊拍卖行',h:0,win:[14,21],x:88,d:()=>'看展、拍卖',line:'',go:'gallery'},
+ {id:'galView',loc:'gallery',n:'安静看一场展',h:1.5,win:[14,21],x:38,d:()=>'才艺+2 心情+4',line:'我在一幅蓝色的画前站了十分钟。不是看懂了，是想让别人看见我在看。',run:s=>{add('talent',2);add('mood',4)}},
+ {id:'galBid',loc:'gallery',n:'拍卖会举牌',h:2,win:[15,21],x:64,d:()=>'¥500 名望+6 才艺+1（第 4 周起）',line:'第三次举牌的时候，全场都回头看我。拍下的是一只清代的鼻烟壶——和一屋子人的记忆。',need:s=>s.ch<4?'第 4 周开放':s.money<500&&'钱不够',run:s=>{add('money',-500);add('fame',6);add('talent',1)}},
+ {id:'galleryBack',loc:'gallery',n:'回到会所',h:0,win:[14,22],x:10,d:()=>'离开',line:'',go:'elite'},
  {id:'matchCafe',loc:'cafe',n:'请周太牵线',h:.5,win:[14,18],x:78,d:()=>'介绍一位富二代，明天见面',line:'',match:'regular',need:s=>s.ch<2?'第 2 周开放':pendingAppt()?'已经有一场相亲约好了':s.matched===s.day&&'今天已经找人牵过线了'},
  {id:'matchDine',loc:'dine',n:'找领班 Leo 牵线',h:.5,win:[18,23],x:86,d:()=>'¥100 小费 · 介绍一位阔少',line:'',match:'maitre',fee:100,need:s=>s.ch<2?'第 2 周开放':pendingAppt()?'已经有一场相亲约好了':s.matched===s.day?'今天已经找人牵过线了':s.money<100&&'钱不够付小费'},
  {id:'wardrobe',loc:'home',n:'打开衣柜',h:0,win:[0,28],x:30,d:()=>'换衣服、戴首饰、挑包',line:'',wardrobe:true},
@@ -837,7 +861,7 @@ const ICONS={
  apple:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5M12 7c0-2 1-4 3-4',shake:'M8 3h8l-1 18H9zM7 7h10M12 3V1',
  yoga:'M12 4a2 2 0 1 0 0 .1M12 7v6M6 10l6 3 6-3M8 21l4-8 4 8',laundry:'M4 3h16v18H4zM4 7h16M12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8M7 5h.01',
  buyFruit:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5',buyProtein:'M7 6h10v14H7zM9 3h6v3H9zM9 11h6',
- toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',wardrobe:'M5 3h14v18H5zM12 3v18M9 11v2M15 11v2',makeupOn:'M9 3h6v5H9zM8 8h8l-1 13H9z',to4s:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2M6 14h.01M18 14h.01',carShop:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2',testDrive:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 12l5-3M12 21v-6',carsBack:'M4 21V4h16v17M9 21v-7h6v7',ownRace:'M4 20l4-14h8l4 14M12 8v3M12 14v3',matchCafe:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M12 20s-5-3-5-6a2.5 2.5 0 0 1 5-1a2.5 2.5 0 0 1 5 1c0 3-5 6-5 6',matchDine:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M12 20s-5-3-5-6a2.5 2.5 0 0 1 5-1a2.5 2.5 0 0 1 5 1c0 3-5 6-5 6',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
+ toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',wardrobe:'M5 3h14v18H5zM12 3v18M9 11v2M15 11v2',makeupOn:'M9 3h6v5H9zM8 8h8l-1 13H9z',to4s:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2M6 14h.01M18 14h.01',carShop:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2',testDrive:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 12l5-3M12 21v-6',carsBack:'M4 21V4h16v17M9 21v-7h6v7',ownRace:'M4 20l4-14h8l4 14M12 8v3M12 14v3',matchCafe:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M12 20s-5-3-5-6a2.5 2.5 0 0 1 5-1a2.5 2.5 0 0 1 5 1c0 3-5 6-5 6',matchDine:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M12 20s-5-3-5-6a2.5 2.5 0 0 1 5-1a2.5 2.5 0 0 1 5 1c0 3-5 6-5 6',toSport:'M6 3l12 18M4 21h8',sportShop:'M6 3l12 18M4 21h8',sportBack:'M4 21V4h16v17M9 21v-7h6v7',toSpa:'M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10',spaOil:'M12 3c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10',spaFace:'M12 4a7 8 0 1 0 0 16a7 8 0 1 0 0-16M9 11h.01M15 11h.01M9 15q3 2 6 0',spaBack:'M4 21V4h16v17M9 21v-7h6v7',toRiding:'M5 20l3-8 6-2 3-5 2 3-2 3v9M8 12l-3-2',rideLesson:'M5 20l3-8 6-2 3-5 2 3-2 3v9M8 12l-3-2',rideTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',ridingBack:'M4 21V4h16v17M9 21v-7h6v7',toYacht:'M3 17h18l-3 4H6zM12 3v12M12 4l6 9h-6',yachtSunset:'M3 17h18M7 17a5 5 0 0 1 10 0M12 7V5M5 10l-1-1M19 10l1-1',yachtParty:'M3 17h18l-3 4H6zM12 3v12M12 4l6 9h-6',yachtBack:'M4 21V4h16v17M9 21v-7h6v7',toGallery:'M3 5h18v14H3zM7 15l3-4 3 3 2-2 3 3',galView:'M3 5h18v14H3zM7 15l3-4 3 3 2-2 3 3',galBid:'M5 21h14M12 3v10M8 7l4-4 4 4',galleryBack:'M4 21V4h16v17M9 21v-7h6v7',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
  toDine:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineSolo:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineKiki:'M12 20s-7-4-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 6-7 10-7 10',dineManner:'M4 12h16M6 12a6 6 0 0 1 12 0M12 6V4M3 16h18',dineBack:'M4 21V4h16v17M9 21v-7h6v7',
  toPet:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petCat:'M5 20V9l3-4 2 4h4l2-4 3 4v11zM9 13h.01M15 13h.01M10 16q2 1 4 0',petWalk:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petPhoto:'M4 7h4l2-3h4l2 3h4v13H4zM12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8',petBack:'M4 21V4h16v17M9 21v-7h6v7',pt:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',pilates:'M12 4a2 2 0 1 0 0 .1M4 20h16M7 20l5-9 5 9',sauna:'M8 4q2 2 0 4t0 4M12 4q2 2 0 4t0 4M16 4q2 2 0 4t0 4M4 18h16',toMall:'M4 21V4h16v17M9 21v-7h6v7',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3a3 3 0 0 1 3 3zM20 16a3 3 0 1 1-3-3a3 3 0 0 1 3 3z',mute:'M4 9v6h4l5 4V5L8 9zM17 9l4 6M21 9l-4 6'};
 const icon=k=>`<svg class="i" viewBox="0 0 24 24"><path d="${ICONS[k]||''}"/></svg>`;
@@ -1015,7 +1039,8 @@ async function doAct(id,fast){
       su.classList.add('busy','act-'+P.a);const steps=Math.max(5,Math.round(a.h*2)),dur=steps*.6;actSound(P.s,dur);
       $('#prog').style.display='block';$('#progT').textContent=a.n+'中…';const pb=$('#progB');pb.style.transition='none';pb.style.width='0';void pb.offsetWidth;pb.style.transition=`width ${dur}s linear`;pb.style.width='100%';
       const t0=S.t;for(let i=1;i<=steps;i++){await wait(600);S.t=t0+a.h*i/steps;renderDial();renderClock()}S.t=t0;$('#prog').style.display='none';su.classList.remove('busy','act-'+P.a);pr.remove();setPose(null)}}
-  const b={...S};const note=a.run(S)||'';S.t+=a.h;if(!fast){const dm=S.money-b.money;if(dm<0)actSound('register',.9);else if(dm>0)actSound('coins',.8)}
+  const b={...S};const note=a.run(S)||'';S.t+=a.h;
+  if(/golf/.test(id)&&owned('golfSet')&&id==='golfLesson')add('talent',2);if(['golf','riding'].includes(LOC[S.loc]?.sub||S.loc)&&owned('visor'))add('mood',4);if(id==='ownRace'&&owned('raceSuit'))add('fame',2);if(['kart','kartGu','ownRace'].includes(id)&&owned('helmet'))add('mood',5);if(!fast){const dm=S.money-b.money;if(dm<0)actSound('register',.9);else if(dm>0)actSound('coins',.8)}
   pops(b);renderAll();save();busy=false;if(!fast)sfx(S.money>b.money?'coin':'done');
   if(!fast){const show=S.ch>=2&&['date','giftLove','latte','gala'].includes(id)&&$(`[data-npc="gu"]`)&&Math.random()<.6;
     if(show)await talk('gu',{date:'下次……还能约你吗？',giftLove:'你怎么知道我喜欢这个？',latte:'今天的心……画歪了。故意的？',gala:'你今晚，比香槟还抢眼。'}[id],null,diffText(b));
@@ -1352,7 +1377,7 @@ const SONGS={
  church:{bpm:56,swing:0,seed:41,prog:[CC(36,'maj7'),CC(45,'m7'),CC(41,'maj9'),CC(43,'sus'),CC(36,'maj7'),CC(40,'m7'),CC(41,'maj9'),CC(43,'sus')],comp:'organ',bass:'long',drums:'',lead:'vib',mp:MP_S},
 };
 Object.values(SONGS).forEach(s=>s._mel=makeMel(s));
-const SONGMAP={home:'home',cafe:'cafe',kitchen:'kitchen',mall:'chic',gym:'gym',tea:'tea',dine:'dine',pet:'pet',cars:'kart',florist:'florist',market:'market',academy:'academy',elite:'elite',church:'church',golf:'sport',kart:'kart',bar:'bar',party:'party'};
+const SONGMAP={home:'home',cafe:'cafe',kitchen:'kitchen',mall:'chic',gym:'gym',tea:'tea',dine:'dine',pet:'pet',cars:'kart',sport:'chic',spa:'tea',riding:'sport',yacht:'party',gallery:'elite',florist:'florist',market:'market',academy:'academy',elite:'elite',church:'church',golf:'sport',kart:'kart',bar:'bar',party:'party'};
 function play(sg,st,t0){const N=sg.prog.length,bar=Math.floor(st/8)%N,b=st%8,c=sg.prog[bar],E=60/sg.bpm/2,t=t0+((b%2)?E*sg.swing:0),R=c.r;
   if(sg.comp==='ep'&&sg.cs.includes(b))c.v.forEach((m,i)=>ep(t+i*.014,m,E*1.6,.032));
   if(sg.comp==='pluck'&&sg.cs.includes(b))c.v.forEach((m,i)=>pluck(t+i*.008,m,E*.8,.034));
@@ -1410,11 +1435,16 @@ const ITEMS={
  birkin:{c:'bag',n:'鳄鱼纹铂金包',p:4800,st:7,col:'#a8743c'},
  lipstick:{c:'makeup',n:'大牌口红',p:120,st:0,qty:1,col:'#b3203a'},
  makeupBox:{c:'makeup',n:'全妆礼盒',p:300,st:0,qty:3,col:'#f1c9b9'},
+ golfSet:{c:'gear',tab:'golf',n:'高尔夫球杆套装',p:900,st:0,col:'#c9c2b4',desc:'上高尔夫课才艺额外 +2'},
+ golfWear:{c:'outfit',tab:'golf',n:'白色高尔夫套装',p:420,st:3,col:'#f6f4ee'},
+ visor:{c:'gear',tab:'golf',n:'香槟色遮阳帽',p:180,st:0,col:'#ead2a4',desc:'在球场心情额外 +4'},
+ raceSuit:{c:'gear',tab:'race',n:'粉色赛车服',p:800,st:0,col:'#f19ab0',desc:'开车上赛道名望额外 +2'},
+ helmet:{c:'gear',tab:'race',n:'珍珠白头盔',p:600,st:0,col:'#f4f1ea',desc:'飙车心情额外 +5'},
  moto:{c:'car',n:'粉色复古机车',p:1800,st:2,col:'#f19ab0'},
  miniCar:{c:'car',n:'奶油色 Mini',p:2600,st:3,col:'#efe6d2'},
  porsche:{c:'car',n:'玫瑰金保时捷',p:15000,st:8,col:'#d9a48a'},
 };
-const CATS={outfit:'服装',watch:'名表',jewel:'首饰',bag:'包包',makeup:'美妆',car:'座驾'};
+const CATS={golf:'高尔夫',race:'赛车',outfit:'服装',watch:'名表',jewel:'首饰',bag:'包包',makeup:'美妆',car:'座驾'};
 const SLOTS=['outfit','watch','jewel','bag','car'];
 function owned(id){return (S.owned||[]).includes(id)}
 function styleScore(){return SLOTS.reduce((t,k)=>t+((S.wear&&S.wear[k]&&ITEMS[S.wear[k]])?ITEMS[S.wear[k]].st:0),0)+(S.madeUp===S.day?5:0)}
@@ -1422,9 +1452,9 @@ function hasCar(){return (S.owned||[]).some(i=>ITEMS[i]&&ITEMS[i].c==='car')}
 function openShop(cats,title){
   let cur=cats[0];
   const draw=()=>{
-    const list=Object.entries(ITEMS).filter(([id,it])=>it.c===cur&&it.p>0).map(([id,it])=>{
+    const list=Object.entries(ITEMS).filter(([id,it])=>(it.tab?it.tab===cur:it.c===cur)&&it.p>0).map(([id,it])=>{
       const has=owned(id)&&it.c!=='makeup';
-      return `<div class="si${has?' has':''}"><i style="background:${it.col}"></i><b>${it.n}</b><span>${it.c==='makeup'?'用一次：当天魅力 +5 · 内含 '+it.qty+' 份':'穿搭分 +'+it.st+(it.c==='car'?' · 跨城区只要半小时':'')}</span><button data-buy="${id}" ${has?'disabled':''}>${has?'已拥有':'¥'+it.p}</button></div>`}).join('');
+      return `<div class="si${has?' has':''}"><i style="background:${it.col}"></i><b>${it.n}</b><span>${it.desc?it.desc:it.c==='makeup'?'用一次：当天魅力 +5 · 内含 '+it.qty+' 份':'穿搭分 +'+it.st+(it.c==='car'?' · 跨城区只要半小时':'')}</span><button data-buy="${id}" ${has?'disabled':''}>${has?'已拥有':'¥'+it.p}</button></div>`}).join('');
     $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>${title}</h3><div class="tabs">${cats.map(c=>`<button data-cat="${c}" class="${c===cur?'on':''}">${CATS[c]}</button>`).join('')}</div><div class="sgrid">${list}</div><p class="sm">存款 ¥${S.money} · 当前穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
     $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
     $('#plan').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cur=b.dataset.cat;draw()});
@@ -1433,8 +1463,8 @@ function openShop(cats,title){
 }
 async function buyItem(id){const it=ITEMS[id];if(S.money<it.p){toast('钱不够');return}
   const b={...S};add('money',-it.p);S.owned=S.owned||[];S.wear=S.wear||{};
-  if(it.c==='makeup'){S.makeup=(S.makeup||0)+it.qty}else{S.owned.push(id);S.wear[it.c]=id;add('mood',5);if(id==='porsche')add('fame',8)}
-  actSound('register',.9);renderAll();pops(b);save();toast(it.c==='makeup'?`买了${it.n}，美妆 +${it.qty}`:`买下${it.n}，已经穿戴上`);setOutfit()}
+  if(it.c==='makeup'){S.makeup=(S.makeup||0)+it.qty}else{S.owned.push(id);if(it.c!=='gear')S.wear[it.c]=id;add('mood',5);if(id==='porsche')add('fame',8)}
+  actSound('register',.9);renderAll();pops(b);save();toast(it.c==='makeup'?`买了${it.n}，美妆 +${it.qty}`:it.c==='gear'?`买下${it.n}：${it.desc}`:`买下${it.n}，已经穿戴上`);setOutfit()}
 function openWardrobe(){
   const row=k=>{const mine=Object.entries(ITEMS).filter(([id,it])=>it.c===k&&(it.p===0||owned(id)));
     return `<div class="wr"><em>${CATS[k]}</em>${mine.length?mine.map(([id,it])=>`<button data-wear="${k}:${id}" class="${S.wear&&S.wear[k]===id?'on':''}"><i style="background:${it.col}"></i>${it.n}${it.st?' +'+it.st:''}</button>`).join(''):'<span class="sm">还没有，去名店城或车行看看</span>'}${k!=='outfit'&&k!=='car'&&S.wear&&S.wear[k]?`<button data-wear="${k}:" class="off">摘下</button>`:''}</div>`};
