@@ -499,7 +499,14 @@ h1,h3,#quest h3,#cut .card h1,#roomName,.act .an,#talk .who,#cut .bar .who{font-
 #plan .tabs button.on{background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);border-color:transparent;font-weight:700}
 #plan .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 #plan .si{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:14px;background:var(--tile1);border:1px solid var(--rg2)}
-#plan .si i{display:block;height:54px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),inset 0 -18px 30px rgba(0,0,0,.18)}
+#plan .si .pic{position:relative;height:150px;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.16),rgba(0,0,0,.12));display:flex;align-items:center;justify-content:center}
+#plan .si .pic img{max-height:100%;max-width:100%;object-fit:contain}
+#plan .si .pic.fig img{height:230%;max-height:none;max-width:none;object-fit:cover;object-position:50% 18%;transform:translateY(22%)}
+#plan .guide{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:10px 12px;border-radius:14px;background:var(--tile1);border:1px solid var(--rg2)}
+#plan .guide .gface{width:44px;height:44px;border-radius:50%;flex:0 0 auto;background:center 18%/cover no-repeat url(assets/npc_clerk.png),linear-gradient(135deg,var(--g1),var(--g2))}
+#plan .guide b{font-size:13px;color:var(--rose)}#plan .guide p{margin:2px 0 0;font-size:13px;color:var(--ink)}
+#plan .guide>div{flex:1}
+#plan .guide .gtalk{border:0;border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);white-space:nowrap}
 #plan .si b{font-size:14px;color:var(--ink)}#plan .si span{font-size:11px;color:var(--ink2);min-height:28px}
 #plan .si button,#plan .wr button{border:0;border-radius:999px;padding:6px 10px;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk)}
 #plan .si button:disabled{opacity:.45;cursor:default}
@@ -519,6 +526,18 @@ h1,h3,#quest h3,#cut .card h1,#roomName,.act .an,#talk .who,#cut .bar .who{font-
 #cut .res .stamp{align-self:flex-start;margin-bottom:10px!important}
 #cut .res .rtag{align-self:flex-start;margin-top:12px;padding:5px 14px;border-radius:999px;font-size:12px;letter-spacing:2px;color:#f1d39b;border:1px solid rgba(241,211,155,.45);background:rgba(241,211,155,.08)}
 #world img.map.fbmap{filter:blur(6px) brightness(.55) saturate(.8)}
+
+/* 衣柜 v2：人物预览 + 实物格子 */
+#plan .pbox.wardrobe{width:min(900px,90%)}
+#plan .wlay{display:flex;gap:18px}
+#plan .wme{flex:0 0 200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;border-radius:16px;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.14),rgba(0,0,0,.15));border:1px solid var(--rg2);padding:12px}
+#plan .wme img{height:330px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.4))}
+#plan .wme p{margin:8px 0 0;text-align:center;color:var(--ink);font-size:13px}#plan .wme b{font-size:22px;color:var(--rose)}#plan .wme small{color:var(--ink2)}
+#plan .wright{flex:1;min-width:0}
+#plan .wtile{cursor:pointer;transition:transform .15s}#plan .wtile:hover{transform:translateY(-2px)}
+#plan .wtile.on{border:2px solid var(--g2);box-shadow:0 0 0 3px rgba(241,211,155,.18)}
+#plan .wtile span{min-height:0}
+#plan .wempty{grid-column:1/-1;padding:40px;text-align:center;color:var(--ink2);border:1px dashed var(--rg2);border-radius:14px}
 </style>
 </head>
 <body>
@@ -1495,25 +1514,40 @@ function hasCar(){return (S.owned||[]).some(i=>ITEMS[i]&&ITEMS[i].c==='car')}
 function openShop(cats,title){
   let cur=cats[0];
   const draw=()=>{
+    const pic=itemPic;
     const list=Object.entries(ITEMS).filter(([id,it])=>(it.tab?it.tab===cur:it.c===cur)&&it.p>0).map(([id,it])=>{
       const has=owned(id)&&it.c!=='makeup';
-      return `<div class="si${has?' has':''}"><i style="background:${it.col}"></i><b>${it.n}</b><span>${it.desc?it.desc:it.c==='makeup'?'用一次：当天魅力 +5 · 内含 '+it.qty+' 份':'穿搭分 +'+it.st+(it.c==='car'?' · 跨城区只要半小时':'')}</span><button data-buy="${id}" ${has?'disabled':''}>${has?'已拥有':'¥'+it.p}</button></div>`}).join('');
-    $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>${title}</h3><div class="tabs">${cats.map(c=>`<button data-cat="${c}" class="${c===cur?'on':''}">${CATS[c]}</button>`).join('')}</div><div class="sgrid">${list}</div><p class="sm">存款 ¥${S.money} · 当前穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
+      return `<div class="si${has?' has':''}">${pic(id,it)}<b>${it.n}</b><span>${it.desc?it.desc:it.c==='makeup'?'用一次：当天魅力 +5 · 内含 '+it.qty+' 份':'穿搭分 +'+it.st+(it.c==='car'?' · 跨城区只要半小时':'')}</span><button data-buy="${id}" ${has?'disabled':''}>${has?'已拥有':'¥'+it.p}</button></div>`}).join('');
+    const guide=cats.includes('car')?['车行销售 Max','这台保时捷，配你刚刚好。试驾不要钱，心动要钱。']:cats.includes('golf')?['店员小林','球杆要选轻一点的，女生挥起来才好看。']:['导购 Ann',S.charm<30?'这季新款到了，你穿酒红会很好看。':'乔小姐来啦！VIP 室给你留着呢。'];
+    $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>${title}</h3><div class="guide"><div class="gface"></div><div><b>${guide[0]}</b><p>「${guide[1]}」</p></div><button class="gtalk">和导购聊聊</button></div><div class="tabs">${cats.map(c=>`<button data-cat="${c}" class="${c===cur?'on':''}">${CATS[c]}</button>`).join('')}</div><div class="sgrid">${list}</div><p class="sm">存款 ¥${S.money} · 当前穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
     $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
+    $('#plan .gtalk').onclick=async()=>{$('#plan').classList.remove('show');await guideTalk(cats);openShop(cats,title)};
     $('#plan').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cur=b.dataset.cat;draw()});
     $('#plan').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buyItem(b.dataset.buy).then(draw));
   };draw();$('#plan').classList.add('show');
 }
+async function guideTalk(cats){
+  const who=NPC_OK.clerk?'clerk':'su';const name=cats.includes('car')?'车行销售 Max':cats.includes('golf')?'店员小林':'导购 Ann';
+  const best=Object.entries(ITEMS).filter(([id,it])=>cats.includes(it.tab||it.c)&&it.p>0&&!owned(id)&&it.p<=S.money&&it.st>0).sort((a,b)=>b[1].st/b[1].p-a[1].st/a[1].p)[0];
+  S.talked=S.talked||{};const done=S.talked['guide'+name]===S.day;
+  const i=await talk(who,`${name}：「${done?'今天想再看看什么？':'欢迎光临～今天想找点什么？'}」`,[['推荐一件最适合约会的',best?`她会推荐：${best[1].n}`:'你的预算暂时不够'],['请她帮你搭配',done?'今天聊过了':'魅力+2'],['打听哪家太太来过',done?'今天聊过了':'名望+1']]);
+  if(i===0){await talk(who,best?`${name}：「${best[1].n}，¥${best[1].p}，穿搭分 +${best[1].st}。性价比最高，约会穿它，男人眼睛会直。」`:`${name}：「先攒攒钱，下周来看新款。」`);return}
+  if(done){await talk(who,`${name}：「今天的搭配建议都给你啦，明天再来～」`);return}
+  const b={...S};if(i===1)add('charm',2);else add('fame',1);S.talked['guide'+name]=S.day;S.t+=.5;renderAll();pops(b);save();
+  await talk(who,i===1?`${name}：「腰线提高两厘米，耳环换成小一号的——你看，贵气就出来了。」`:`${name}：「昨天陈太太来过，买了三只包。她说下周的慈善晚宴，靳夫人也会去哦。」`,null,diffText(b))}
 async function buyItem(id){const it=ITEMS[id];if(S.money<it.p){toast('钱不够');return}
   const b={...S};add('money',-it.p);S.owned=S.owned||[];S.wear=S.wear||{};
   if(it.c==='makeup'){S.makeup=(S.makeup||0)+it.qty}else{S.owned.push(id);if(it.c!=='gear')S.wear[it.c]=id;add('mood',5);if(id==='porsche')add('fame',8)}
   actSound('register',.9);renderAll();pops(b);save();toast(it.c==='makeup'?`买了${it.n}，美妆 +${it.qty}`:it.c==='gear'?`买下${it.n}：${it.desc}`:`买下${it.n}，已经穿戴上`);setOutfit()}
-function openWardrobe(){
-  const row=k=>{const mine=Object.entries(ITEMS).filter(([id,it])=>it.c===k&&(it.p===0||owned(id)));
-    return `<div class="wr"><em>${CATS[k]}</em>${mine.length?mine.map(([id,it])=>`<button data-wear="${k}:${id}" class="${S.wear&&S.wear[k]===id?'on':''}"><i style="background:${it.col}"></i>${it.n}${it.st?' +'+it.st:''}</button>`).join(''):'<span class="sm">还没有，去名店城或车行看看</span>'}${k!=='outfit'&&k!=='car'&&S.wear&&S.wear[k]?`<button data-wear="${k}:" class="off">摘下</button>`:''}</div>`};
-  $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>我的衣柜</h3>${['outfit','watch','jewel','bag','car'].map(row).join('')}<p class="sm">美妆存货 ${S.makeup||0} 份 · 穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
+function itemPic(id,it){return it.c==='outfit'?`<div class="pic fig"><img src="${id==='tweed'?'assets/sutang.png':'assets/su_'+id+'.png'}" onerror="this.parentNode.style.background='${it.col}';this.remove()"></div>`:`<div class="pic" style="background:${it.col}"><img src="assets/item_${id}.png" onerror="this.remove()"></div>`}
+function openWardrobe(cur){
+  cur=cur||'outfit';const slots=['outfit','watch','jewel','bag','car'];
+  const mine=Object.entries(ITEMS).filter(([id,it])=>it.c===cur&&(it.p===0||owned(id)));
+  const tiles=mine.length?mine.map(([id,it])=>{const on=S.wear&&S.wear[cur]===id;return `<div class="si wtile${on?' on':''}" data-wear="${cur}:${on&&cur!=='outfit'&&cur!=='car'?'':id}">${itemPic(id,it)}<b>${it.n}</b><span>${on?(cur==='outfit'||cur==='car'?'正在穿着':'已戴上 · 再点摘下'):it.st?'穿搭分 +'+it.st:'基础款'}</span></div>`}).join(''):`<div class="wempty">还没有${CATS[cur]}。去${cur==='car'?'卡丁车场隔壁的 4S 店':'海港名店城的精品店'}看看吧。</div>`;
+  $('#plan').innerHTML=`<div class="pbox shop wardrobe"><button class="px">×</button><h3>我的衣柜</h3><div class="wlay"><div class="wme"><img src="${IMG.su}"><p>穿搭分 <b>${styleScore()}</b><br><small>约会时算进魅力 · 美妆 ${S.makeup||0} 份</small></p></div><div class="wright"><div class="tabs">${slots.map(c=>`<button data-cat="${c}" class="${c===cur?'on':''}">${CATS[c]}</button>`).join('')}</div><div class="sgrid">${tiles}</div></div></div></div>`;
   $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
-  $('#plan').querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.wear.split(':');S.wear=S.wear||{};S.wear[k]=id||null;save();setOutfit();renderAll();openWardrobe()});
+  $('#plan').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>openWardrobe(b.dataset.cat));
+  $('#plan').querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.wear.split(':');S.wear=S.wear||{};S.wear[k]=id||null;save();setOutfit();renderAll();openWardrobe(k)});
   $('#plan').classList.add('show');
 }
 const OUTFIT_OK={};['tennis','slip','suit','gown','golfWear'].forEach(k=>{const im=new Image();im.onload=()=>{OUTFIT_OK[k]=1;setOutfit()};im.src=`assets/su_${k}.png`});
