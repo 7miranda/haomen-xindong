@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>豪门心动计划</title>
+<style>
+:root{--ink:#3a2622;--cream:#f6ecd9;--teal:#2f5d5a;--teal2:#3f7a72;--tealD:#21403e;--wine:#7a2734;--wine2:#a23a48;--olive:#b4a55a;--gold:#d8a84a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;background:#1d1517;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:800px;transform:translate(-50%,-50%) scale(var(--k,1));transform-origin:center;overflow:hidden;container-type:size;background:#c9b48c;border-radius:10px}
+/* 城市 */
+#world{position:absolute;inset:0 0 18% 0;overflow:hidden}
+#world img.map{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:filter .8s}
+#world.dusk img.map{filter:sepia(.25) saturate(1.1) brightness(.95)}
+#world.night img.map{filter:brightness(.55) saturate(.9) hue-rotate(-12deg)}
+.spot{position:absolute;cursor:pointer;border-radius:18px;transition:.2s}
+.spot:hover{background:rgba(255,240,200,.18);box-shadow:0 0 0 3px rgba(255,236,190,.9),0 0 30px rgba(255,220,150,.8)}
+.spot .tag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:5px 14px;border-radius:999px;background:var(--cream);border:2px solid var(--ink);font-weight:900;font-size:13px;white-space:nowrap;box-shadow:2px 3px 0 var(--ink);opacity:0;transition:.2s}
+.spot:hover .tag,.spot.here .tag{opacity:1}
+.spot.here .tag{background:var(--gold)}
+.spot.closed{cursor:not-allowed}.spot.closed .tag{background:#ccc}
+#quest{position:absolute;right:1.4%;top:2.4%;width:min(230px,24%);padding:12px 14px 10px;background:var(--cream);border:2px solid var(--ink);border-radius:6px 18px 6px 18px;box-shadow:3px 4px 0 var(--ink);z-index:3;transform:rotate(1.2deg)}
+#quest h4{margin:0;font-size:11px;letter-spacing:2px;color:var(--wine)}
+#quest h3{margin:2px 0 6px;font-size:15px}
+.q{font-size:12px;margin:4px 0}
+.q .t{display:flex;justify-content:space-between}
+.q .b{height:6px;border-radius:6px;background:#e3d3b5;overflow:hidden;margin-top:2px}
+.q .b i{display:block;height:100%;background:var(--teal2);transition:width .6s}
+.q.ok{color:var(--teal)}.q.ok .b i{background:var(--gold)}
+#walker{position:absolute;width:34px;height:34px;border-radius:50%;border:3px solid #fff;background:var(--wine) center 8%/250% auto no-repeat;box-shadow:0 3px 8px rgba(0,0,0,.4);transform:translate(-50%,-50%);transition:left .9s ease-in-out,top .9s ease-in-out;z-index:2;pointer-events:none}
+/* 房间 */
+#room{position:absolute;left:7%;right:7%;top:4%;height:58%;z-index:4;display:none}
+#room.show{display:block;animation:pop .35s cubic-bezier(.2,.9,.3,1.25)}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+#roomView{position:absolute;inset:0;border-radius:26px;overflow:hidden;border:4px solid var(--cream);box-shadow:0 0 0 3px var(--ink),0 14px 30px rgba(0,0,0,.45);background:#d9c3a0}
+#roomView img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#roomName{position:absolute;left:50%;top:10px;transform:translateX(-50%);padding:3px 16px;background:var(--teal);color:var(--cream);border:2px solid var(--ink);border-radius:999px;font-weight:900;font-size:13px;letter-spacing:2px;z-index:3}
+.sprite{position:absolute;bottom:3%;height:80%;transform:translateX(-50%);transition:left .7s ease-in-out;filter:drop-shadow(3px 6px 0 rgba(0,0,0,.18));z-index:2}
+.sprite.npc{cursor:pointer;z-index:1}
+.sprite.npc:hover{filter:drop-shadow(0 0 8px #fff4c8) drop-shadow(0 0 2px #fff)}
+.sprite.busy{animation:busy .6s ease-in-out infinite}
+@keyframes busy{50%{transform:translateX(-50%) translateY(-2%)}}
+.nametag{position:absolute;transform:translateX(-50%);padding:1px 10px;background:var(--cream);border:2px solid var(--ink);border-radius:8px;font-size:12px;font-weight:900;z-index:3;pointer-events:none}
+#prog{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:220px;padding:8px 12px;background:rgba(246,236,217,.95);border:2px solid var(--ink);border-radius:12px;font-weight:800;font-size:13px;text-align:center;z-index:4;display:none}
+#prog .b{height:8px;background:#e3d3b5;border-radius:8px;overflow:hidden;margin-top:5px}
+#prog .b i{display:block;height:100%;width:0;background:var(--wine2)}
+#acts{position:absolute;left:50%;transform:translateX(-50%);bottom:-62px;display:flex;gap:6px;padding:6px 10px;background:var(--teal);border:3px solid var(--ink);border-radius:16px;box-shadow:0 6px 0 var(--tealD)}
+.act{position:relative;width:48px;height:48px;border-radius:11px;border:2px solid var(--ink);background:var(--cream);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.act:hover:not(.off){transform:translateY(-4px)}
+.act.off{opacity:.4;cursor:not-allowed;filter:grayscale(1)}
+.act.exit{background:var(--wine2)}
+.tip{position:absolute;bottom:62px;left:50%;transform:translateX(-50%);width:170px;padding:8px 10px;background:var(--cream);border:2px solid var(--ink);border-radius:10px;font-size:12px;line-height:1.45;text-align:left;pointer-events:none;opacity:0;transition:.15s;z-index:9;box-shadow:2px 3px 0 var(--ink)}
+.tip b{font-size:13px}.tip em{color:var(--wine);font-style:normal;font-weight:700;display:block}
+.act:hover .tip{opacity:1}
+/* 仪表盘 */
+#dash{position:absolute;left:0;right:0;bottom:0;height:18%;background:var(--teal);border-top:4px solid var(--ink);display:flex;align-items:center;gap:1.6%;padding:0 1.6%;z-index:5;box-shadow:inset 0 6px 0 var(--teal2)}
+#dial{position:relative;height:118%;aspect-ratio:1;margin-top:-4%;flex:none}
+#dial svg{width:100%;height:100%;display:block}
+#dial .txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--cream);font-weight:900;line-height:1.15}
+#dial .txt small{font-size:11px;letter-spacing:1px;opacity:.85}
+#dial .txt span{font-size:20px}
+.panel{background:var(--tealD);border:2px solid var(--ink);border-radius:12px;padding:6px 10px;color:var(--cream);height:78%}
+#wallet{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:96px}
+#wallet .m{font-size:17px;font-weight:900;color:var(--gold)}
+#wallet .r{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--wine);text-align:center;font-weight:800}
+#stats{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;align-content:center}
+.st{display:grid;grid-template-columns:34px 1fr 26px;gap:6px;align-items:center;font-size:11px;font-weight:800}
+.st .b{height:8px;border-radius:8px;background:#163130;overflow:hidden}
+.st .b i{display:block;height:100%;transition:width .6s}
+.st b{text-align:right}
+#alerts{display:flex;gap:6px;align-items:center}
+.al{width:40px;height:40px;border-radius:50%;border:3px solid var(--cream);background:var(--teal2);display:flex;align-items:center;justify-content:center;font-size:19px;opacity:.35}
+.al.on{opacity:1;background:var(--wine2);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.1)}}
+#rel{min-width:170px;display:flex;flex-direction:column;justify-content:center}
+#rel .row{display:flex;align-items:center;gap:6px}
+#rel .head{width:30px;height:30px;border-radius:50%;border:2px solid var(--cream);background:#ddd center 6%/260% auto no-repeat;flex:none}
+#rel .track{flex:1;display:flex;justify-content:space-between}
+#rel .track i{width:8px;height:8px;border-radius:50%;background:#163130;border:1px solid var(--teal2)}
+#rel .track i.on{background:var(--gold)}
+#rel .lb{text-align:center;font-size:12px;font-weight:900;margin-top:4px;color:var(--gold)}
+.pops{position:absolute;z-index:20;pointer-events:none;font-weight:900;font-size:15px;animation:fly 1.4s ease-out forwards;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
+@keyframes fly{0%{transform:translateY(8px) scale(.6);opacity:0}15%{transform:none;opacity:1}100%{transform:translateY(-70px);opacity:0}}
+/* 对话 */
+#talk{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;background:rgba(29,21,23,.45)}
+#talk.show{display:flex}
+#talk .box{position:relative;width:min(520px,70%);padding:18px 20px 14px 20px;background:var(--teal);color:var(--cream);border:3px solid var(--ink);border-radius:20px;box-shadow:0 8px 0 var(--tealD);animation:pop .3s}
+#talk .face{position:absolute;left:50%;top:-58px;transform:translateX(-50%);width:84px;height:84px;border-radius:50%;border:4px solid var(--cream);background:#e8d8bb center 5%/260% auto no-repeat;box-shadow:0 0 0 3px var(--ink)}
+#talk .who{margin-top:24px;text-align:center;font-weight:900;color:var(--gold);letter-spacing:2px}
+#talk .line{margin:6px 0 10px;font-size:15px;line-height:1.65;text-align:center;min-height:48px}
+#talk .fx{text-align:center;font-size:12px;color:#ffe3a3;font-weight:800;margin-bottom:6px}
+#talk .btns{display:flex;flex-direction:column;gap:7px;align-items:center}
+#talk button{min-width:58%;padding:8px 14px;border-radius:999px;border:2px solid var(--ink);background:var(--cream);color:var(--ink);font-weight:900;font-size:14px;cursor:pointer}
+#talk button small{display:block;font-weight:600;font-size:11px;color:var(--wine)}
+#talk button.ok{min-width:auto;padding:6px 22px;background:var(--gold)}
+/* 过场 */
+#cut{position:absolute;inset:0;z-index:12;display:none;background:var(--wine);align-items:center;justify-content:center}
+#cut.show{display:flex}
+#cut .frame{position:relative;width:76%;height:76%;border-radius:24px;overflow:hidden;border:4px solid var(--cream);box-shadow:0 0 0 3px var(--ink)}
+#cut .frame img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#cut .frame .sprite{height:92%;bottom:-4%}
+#cut .bar{position:absolute;left:0;right:0;bottom:0;padding:14px 26px 16px;background:var(--teal);color:var(--cream);border-top:3px solid var(--ink);z-index:3;min-height:30%}
+#cut .bar .who{color:var(--gold);font-weight:900;letter-spacing:2px;font-size:13px}
+#cut .bar .line{font-size:16px;line-height:1.6;margin-top:4px}
+#cut .bar .next{position:absolute;right:18px;bottom:10px;font-size:12px;opacity:.7;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+#cut .card{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;flex-direction:column;background:var(--wine);color:var(--cream);text-align:center}
+#cut .card .wk{letter-spacing:8px;font-size:13px;opacity:.8}
+#cut .card h1{font-size:clamp(26px,5cqw,52px);margin:8px 0 12px;letter-spacing:4px}
+#cut .card .g{background:var(--cream);color:var(--ink);padding:8px 18px;border-radius:12px;border:2px solid var(--ink);font-weight:800;font-size:14px}
+#cut .card .go{margin-top:16px;font-size:12px;opacity:.7;animation:blink 1.2s infinite}
+.stamp{display:inline-block;margin-bottom:6px;padding:4px 12px;border:3px solid;border-radius:8px;font-weight:900;font-size:20px;transform:rotate(-6deg);animation:st .5s cubic-bezier(.3,1.6,.5,1) both}
+.stamp.ok{color:#8fd19e;border-color:#8fd19e}.stamp.ng{color:#ffb4b4;border-color:#ffb4b4}
+@keyframes st{from{transform:rotate(-6deg) scale(3);opacity:0}}
+/* ================= 现代奢华主题：中性冷调黑玻璃 + 单一香槟金点缀 ================= */
+:root{--g:rgba(14,15,20,.52);--g2:rgba(14,15,20,.72);--hair:rgba(255,255,255,.14);--txt:#f5f3ef;--sub:rgba(245,243,239,.58);--gold:#d9bf8c;--gold2:#b89a63;--ok:#a9d8c4;--warn:#f0a3a3}
+html,body{font-family:"SF Pro Display",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:.2px}
+#stage{background:#0e0f14}
+#world{inset:0}
+.glass2,#quest,#dash,#acts,#roomName,#talk .box,#cut .bar,#cut .card .g,.nametag,#prog,.spot .tag{background:var(--g);-webkit-backdrop-filter:blur(22px) saturate(.55) brightness(.85);backdrop-filter:blur(22px) saturate(.55) brightness(.85);border:1px solid var(--hair);box-shadow:0 20px 50px rgba(0,0,0,.35);color:var(--txt)}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;display:block}
+/* 地图热点 */
+.spot:hover{background:rgba(255,255,255,.06);box-shadow:0 0 0 1px rgba(255,255,255,.7),0 0 60px rgba(255,255,255,.35)}
+.spot .tag{opacity:1;top:34%;bottom:auto;transform:translateX(-50%);border-radius:999px;padding:7px 16px 7px 12px;font-size:12px;font-weight:500;letter-spacing:2px;display:flex;align-items:center;gap:8px;transition:.25s}
+.spot .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.spot:hover .tag{background:var(--g2);transform:translateX(-50%) translateY(-3px)}
+.spot.here .tag{border-color:rgba(217,191,140,.6)}
+.spot.closed .tag{color:var(--sub)}.spot.closed .tag::before{background:#777;box-shadow:none}
+#walker{border:2px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 0 5px rgba(255,255,255,.18)}
+/* 任务卡 */
+#quest{transform:translateX(-50%);left:50%;right:auto;top:2.4%;border-radius:18px;padding:14px 18px 12px;z-index:6;width:240px}
+#quest h4{color:var(--gold);font-weight:500;font-size:10px;letter-spacing:3px}
+#quest h3{color:var(--txt);font-size:16px;font-weight:600;margin:3px 0 8px}
+.q{color:var(--sub);font-size:12px}.q .t span:last-child{color:var(--txt);font-variant-numeric:tabular-nums}
+.q .b{background:rgba(255,255,255,.1);height:2px;border-radius:2px}
+.q .b i{background:var(--txt)}
+.q.ok{color:var(--gold)}.q.ok .b i{background:var(--gold)}
+/* 底部仪表盘 */
+#dash{left:2%;right:2%;bottom:2.2%;height:13%;border-radius:22px;gap:14px;padding:0 18px;border-top:1px solid var(--hair)}
+#dash .panel{background:transparent;border:0;border-left:1px solid var(--hair);border-radius:0;box-shadow:none;color:var(--txt);height:64%;padding:0 0 0 16px}
+#dial{height:118%;margin-top:-10%}
+#dial .txt{color:var(--txt)}
+#dial .txt span{font-weight:300;font-size:22px;letter-spacing:1px}
+#dial .txt small{font-size:10px;letter-spacing:1.5px;color:var(--sub)}
+#wallet{min-width:110px}
+#wallet .m{color:var(--txt);font-weight:300;font-size:20px;font-variant-numeric:tabular-nums}
+#wallet .r{background:transparent;color:var(--gold);border:1px solid rgba(217,191,140,.5);font-weight:500;font-size:10px;letter-spacing:2px;padding:2px 10px}
+#wallet [data-st="gifts"]{color:var(--sub);font-weight:400!important}
+.st{color:var(--sub);font-weight:400;font-size:11px;letter-spacing:1px}.st b{color:var(--txt);font-weight:500;font-variant-numeric:tabular-nums}
+.st .b{background:rgba(255,255,255,.1);height:3px;border-radius:3px}
+.st .b i{background:var(--txt)!important}
+#alerts{gap:10px}
+.al{width:34px;height:34px;border:1px solid var(--hair);background:transparent;opacity:.35;color:var(--txt);font-size:0}
+.al svg.i{width:16px;height:16px}
+.al.on{opacity:1;background:rgba(240,163,163,.18);border-color:var(--warn);color:var(--warn);animation:pulse 1.6s infinite}
+#rel{min-width:190px}
+#rel .head{border:1px solid rgba(255,255,255,.6);width:32px;height:32px}
+#rel .track i{width:6px;height:6px;background:rgba(255,255,255,.18);border:0}
+#rel .track i.on{background:var(--gold);box-shadow:0 0 6px rgba(217,191,140,.8)}
+#rel .lb{color:var(--gold);font-weight:500;font-size:11px;letter-spacing:2px}
+/* 房间 */
+#room{top:3%;height:61%}
+#roomView{border:1px solid rgba(255,255,255,.35);border-radius:26px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+#roomName{left:16px;top:14px;transform:none;font-weight:600;font-size:13px;letter-spacing:3px;padding:6px 14px}
+#roomName span{color:var(--sub);letter-spacing:.5px!important}
+.nametag{border-radius:999px;padding:3px 12px;font-weight:500;font-size:11px;letter-spacing:2px}
+#acts{bottom:-80px;border-radius:20px;padding:8px;gap:6px}
+.act{width:auto;height:auto;min-width:84px;padding:10px 12px 8px;flex-direction:column;gap:4px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--txt);box-shadow:none;transition:background .2s,border-color .2s,transform .2s}
+.act svg.i{width:22px;height:22px;color:var(--gold)}
+.act .an{font-size:12px;font-weight:500;letter-spacing:1px;white-space:nowrap}
+.act .ac{font-size:10px;color:var(--sub);white-space:nowrap}
+.act:hover:not(.off){background:rgba(255,255,255,.08);border-color:var(--hair);transform:translateY(-3px)}
+.act:active:not(.off){transform:scale(.97)}
+.act.off{opacity:.32;filter:none}
+.act.exit svg.i{color:var(--txt)}
+.act.exit{border-left:1px solid var(--hair);border-radius:0 14px 14px 0;background:transparent}
+.tip{display:none}
+#prog{border-radius:14px;font-weight:500;letter-spacing:1px}
+#prog .b{background:rgba(255,255,255,.12);height:3px}#prog .b i{background:var(--gold)}
+/* 对话 */
+#talk{background:rgba(5,6,10,.4);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#talk .box{border-radius:26px;background:var(--g2);padding:22px 26px 18px}
+#talk .face{border:2px solid #fff;box-shadow:0 10px 30px rgba(0,0,0,.4);background-color:#2a2a30}
+#talk .who{color:var(--gold);font-weight:500;font-size:12px;letter-spacing:4px}
+#talk .line{color:var(--txt);font-size:16px;font-weight:400;line-height:1.75}
+#talk .fx{color:var(--ok);font-weight:500;letter-spacing:.5px}
+#talk button{background:transparent;border:1px solid var(--hair);color:var(--txt);box-shadow:none;font-weight:500;transition:.2s}
+#talk button:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35)}
+#talk button.ok{background:var(--gold);border-color:var(--gold);color:#1a1712;padding:7px 28px;letter-spacing:2px}
+#talk button small{color:var(--gold);font-weight:400}
+/* 过场 */
+#cut{background:radial-gradient(circle at 50% 30%,#23252e,#0e0f14 70%)}
+#cut .card{background:transparent;color:var(--txt)}
+#cut .card .wk{color:var(--gold);font-size:11px;letter-spacing:8px}
+#cut .card h1{font-weight:300;letter-spacing:8px}
+#cut .card .g{border-radius:999px;padding:8px 22px;font-weight:400;font-size:13px;letter-spacing:1px}
+#cut .card .go{color:var(--sub)}
+#cut .frame{border:1px solid rgba(255,255,255,.25);box-shadow:0 40px 100px rgba(0,0,0,.6)}
+#cut .bar{background:var(--g2)}
+#cut .bar .who{color:var(--gold);letter-spacing:4px;font-weight:500}
+#cut .bar .line{font-weight:400}
+#cut .frame .sprite{height:74%;bottom:26%}
+.stamp{font-weight:500;letter-spacing:4px;font-size:16px;border-width:1px;border-radius:999px;padding:6px 18px;transform:none}
+.stamp.ok{color:var(--gold);border-color:var(--gold);background:transparent}.stamp.ng{color:var(--warn);border-color:var(--warn);background:transparent}
+@keyframes st{from{transform:scale(2.4);opacity:0}}
+/* 人物融入 */
+#cut .frame .sprite{filter:drop-shadow(0 18px 14px rgba(40,25,10,.3))}
+#roomView .sprite.npc:hover{outline:none;-webkit-filter:brightness(1.08) drop-shadow(0 0 10px rgba(255,240,210,.85))!important;filter:brightness(1.08) drop-shadow(0 0 10px rgba(255,240,210,.85))!important}
+/* 投影：人物剪影压扁翻转，沿光线方向斜铺在地面上 */
+.cast{position:absolute;transform-origin:50% 100%;filter:brightness(0) blur(3px);opacity:.26;pointer-events:none;z-index:1;transition:left .7s ease-in-out}
+/* 接触阴影：脚底一圈最深的暗部 */
+.floorShadow{position:absolute;width:6%;height:2.6%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(rgba(25,15,8,.55),transparent 70%);z-index:1;transition:left .7s ease-in-out;pointer-events:none}
+.gulls{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.gull{position:absolute;top:var(--y);left:-6%;width:calc(34px*var(--s));animation:glide var(--d) linear var(--dl) infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+.gull path{animation:flap .5s ease-in-out infinite alternate;transform-origin:center}
+@keyframes glide{0%{transform:translate(0,0)}50%{transform:translate(60vw,-12px)}100%{transform:translate(120vw,6px)}}
+@keyframes flap{to{transform:scaleY(.4)}}
+/* ================= 描边与质感：香槟金双线框 ================= */
+:root{--gl:rgba(217,191,140,.62);--gl2:rgba(217,191,140,.24)}
+#dash,#acts,#quest,#talk .box,#roomName,#prog,#cut .bar,#cut .card .g{background:linear-gradient(180deg,rgba(46,43,48,.86) 0%,rgba(18,18,24,.9) 55%,rgba(12,12,17,.92) 100%);border:1px solid var(--gl);box-shadow:inset 0 1px 0 rgba(255,236,200,.22),inset 0 -1px 0 rgba(0,0,0,.4),0 0 0 1px rgba(0,0,0,.55),0 22px 48px rgba(0,0,0,.5)}
+#dash::after,#acts::after,#quest::after,#talk .box::after{content:"";position:absolute;inset:4px;border:1px solid var(--gl2);border-radius:inherit;pointer-events:none}
+#dash::before{content:"";position:absolute;left:50%;top:-6px;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);background:linear-gradient(135deg,#f3dfb3,#b89a63);box-shadow:0 0 8px rgba(217,191,140,.7)}
+#quest{position:absolute}
+/* 房间：金色画框 */
+#roomView{border:2px solid var(--gl);box-shadow:0 0 0 5px rgba(14,15,20,.75),0 0 0 6px var(--gl2),0 30px 80px rgba(0,0,0,.55)}
+#roomView::after{content:"";position:absolute;inset:6px;border:1px solid rgba(255,236,200,.28);border-radius:20px;pointer-events:none;z-index:5}
+#roomName{border-radius:10px;padding:7px 16px 7px 14px;font-size:13px}
+.nametag{background:rgba(14,15,20,.82);border:1px solid var(--gl);color:#f5f3ef}
+/* 仪表盘文字与分区 */
+#dash{height:14%;padding:0 22px}
+#dash .panel{border-left:1px solid var(--gl2)}
+#wallet .m{font-size:22px;font-weight:400;color:#f7ecd5}
+#wallet [data-st="gifts"]{font-size:12px!important;color:rgba(245,243,239,.72)!important}
+#wallet .r{border-color:var(--gl);background:rgba(217,191,140,.1);font-size:11px}
+.st{font-size:12px;color:rgba(245,243,239,.78);grid-template-columns:38px 1fr 30px}
+.st b{font-size:13px;color:#fff}
+.st .b{height:4px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+.st .b i{background:linear-gradient(90deg,#b89a63,#f3dfb3)!important;box-shadow:0 0 6px rgba(217,191,140,.5)}
+.al{width:36px;height:36px;border:1px solid var(--gl2);opacity:.55;color:#f3dfb3}
+.al.on{border-color:#f0a3a3;color:#f0a3a3;opacity:1}
+#rel .lb{font-size:12px}
+#rel .head{border:1.5px solid var(--gl);box-shadow:0 0 0 2px rgba(14,15,20,.8)}
+/* 活动栏：每个按钮独立成框，图标套金圈 */
+#acts{padding:10px;gap:8px;bottom:-92px;border-radius:18px}
+.act{min-width:92px;padding:10px 12px 9px;border:1px solid var(--gl2);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));gap:5px}
+.act svg.i{width:18px;height:18px;padding:7px;box-sizing:content-box;border:1px solid var(--gl);border-radius:50%;color:#f3dfb3;background:radial-gradient(circle at 50% 30%,rgba(217,191,140,.22),rgba(217,191,140,.04))}
+.act .an{font-size:13px;font-weight:600;color:#fff}
+.act .ac{font-size:11px;color:rgba(245,243,239,.68)}
+.act:hover:not(.off){border-color:var(--gl);background:linear-gradient(180deg,rgba(217,191,140,.16),rgba(217,191,140,.04));box-shadow:0 0 18px rgba(217,191,140,.25);transform:translateY(-3px)}
+.act.off{opacity:.62}
+.act.off svg.i{border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.4);background:transparent}
+.act.off .an{color:rgba(255,255,255,.55)}
+.act.off .ac{color:#f0b8a0}
+.act.exit{border:1px solid var(--gl2);border-radius:12px;margin-left:6px}
+/* 地图地点牌 */
+.spot .tag{background:rgba(14,15,20,.8);border:1px solid var(--gl);font-size:13px;box-shadow:0 0 0 3px rgba(14,15,20,.35),0 10px 24px rgba(0,0,0,.4)}
+/* 过场：上方舞台 + 下方对白条，说话的人高亮 */
+#cut .frame{width:78%;height:82%;display:flex;flex-direction:column;background:#0e0f14}
+#cut .stagebox{position:relative;flex:1;overflow:hidden}
+#cut .stagebox img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#cut .stagebox .sprite{position:absolute;transform:translateX(-50%);transition:filter .3s,transform .3s}
+#cut .stagebox .sprite.dim{filter:brightness(.55) saturate(.7)!important;transform:translateX(-50%) scale(.98)}
+#cut .bar{position:relative;flex:none;min-height:0;display:flex;align-items:center;gap:18px;padding:18px 28px 20px;border-top:1px solid var(--gl)}
+#cut .bar .face{flex:none;width:64px;height:64px;border-radius:50%;border:1.5px solid var(--gl);background:#2a2a30 center 5%/260% auto no-repeat;box-shadow:0 0 0 3px rgba(14,15,20,.8)}
+#cut .bar .who{font-size:12px;letter-spacing:4px}
+#cut .bar .line{font-size:18px;line-height:1.6;margin-top:4px}
+#cut .bar .next{right:22px;bottom:10px}
+/* 周结算卡 */
+.res{display:flex;align-items:flex-end;gap:34px;margin-top:6px}
+.res .rp{height:300px;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
+.res .rr{min-width:340px;text-align:left;padding:20px 24px;border:1px solid var(--gl);border-radius:16px;background:linear-gradient(180deg,rgba(46,43,48,.7),rgba(14,15,20,.85));position:relative}
+.res .rr::after{content:"";position:absolute;inset:4px;border:1px solid var(--gl2);border-radius:12px;pointer-events:none}
+.res .stamp{margin-bottom:12px}
+.rrow{display:grid;grid-template-columns:44px 1fr 74px;gap:10px;align-items:center;font-size:13px;margin:9px 0;color:rgba(245,243,239,.8)}
+.rrow b{text-align:right;font-weight:500;font-variant-numeric:tabular-nums;color:#fff}
+.rrow .rb{height:5px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}
+.rrow.hit .rb i{display:block;height:100%;background:linear-gradient(90deg,#b89a63,#f3dfb3)}
+.rrow.miss .rb i{display:block;height:100%;background:linear-gradient(90deg,#a85a5a,#f0a3a3)}
+.rrow.miss b{color:#f0a3a3}
+.res .mono{margin:14px 0 0;font-size:14px;color:#f3dfb3;font-style:italic;letter-spacing:.5px}
+.pops{color:var(--txt)!important;padding:3px 12px;border-radius:999px;background:rgba(14,15,20,.75);border:1px solid var(--hair);text-shadow:none;font-size:12px;font-weight:500;letter-spacing:.5px}
+
+/* ================= 珍珠 · 腮红 · 玫瑰金 主题 ================= */
+:root{--pearl:rgba(255,250,248,.95);--pearl2:rgba(252,240,240,.93);--rg:#c98b86;--rg2:rgba(201,139,134,.32);--plum:#4a2c3d;--plum2:#8a6476;--rose:#c76d84;--blush:#f6dfe1;--g1:#efb7c1;--g2:#c76d84;--btnInk:#fff;--gsoft:rgba(199,109,132,.14)}
+html,body{font-family:"PingFang SC","SF Pro Display","Microsoft YaHei",sans-serif}
+#stage{background:#f6e9e6}
+#dash,#acts,#quest,#talk .box,#roomName,#prog,#cut .bar,#cut .card .g,.spot .tag,.nametag,.res .rr,#dists,#musicBtn{
+  background:linear-gradient(180deg,var(--pb1) 0%,var(--pb2) 100%)!important;color:var(--ink)!important;
+  border:1px solid var(--rg)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 #fff,0 0 0 3px rgba(255,255,255,.55),0 16px 40px rgba(120,60,80,.22)!important}
+#dash::after,#acts::after,#quest::after,#talk .box::after,.res .rr::after{border-color:var(--rg2)!important}
+#dash::before{background:linear-gradient(135deg,#f7d6d0,#c98b86)!important;box-shadow:0 0 8px rgba(201,139,134,.6)!important}
+h1,h3,#quest h3,#cut .card h1,#roomName,.act .an,#talk .who,#cut .bar .who{font-family:"Songti SC","Noto Serif SC","STSong",serif!important}
+/* 任务卡 */
+#quest h4{color:var(--rose)!important}#quest h3{color:var(--ink)!important}
+.q{color:var(--ink2)!important}.q .t span:last-child{color:var(--ink)!important}
+.q .b{background:var(--gsoft)!important}.q .b i{background:linear-gradient(90deg,var(--g1),var(--g2))!important}
+.q.ok{color:var(--rose)!important}.q.ok .b i{background:linear-gradient(90deg,#f2d3a8,#c9a06a)!important}
+/* 仪表盘 */
+#dash .panel{border-left:1px solid var(--rg2)!important;color:var(--ink)!important}
+#dial .txt{color:var(--ink)!important}#dial .txt small{color:var(--ink2)!important}
+#wallet .m{color:var(--ink)!important}#wallet [data-st="gifts"]{color:var(--ink2)!important}
+#wallet .r{background:var(--gsoft)!important;color:var(--rose)!important;border:1px solid var(--rg2)!important;letter-spacing:3px}
+.st{color:var(--ink2)!important}.st b{color:var(--ink)!important}
+.st .b{background:var(--gsoft)!important}.st .b i{background:linear-gradient(90deg,var(--g1),var(--g2))!important;box-shadow:none!important}
+.al{border:1px solid var(--rg2)!important;color:var(--rg)!important;background:var(--tile1)!important;opacity:.6}
+.al.on{background:linear-gradient(90deg,var(--g1),var(--g2))!important;border-color:var(--g2)!important;color:var(--btnInk)!important;opacity:1}
+#rel .head{border:1.5px solid var(--rg)!important;box-shadow:0 0 0 2px #fff!important}
+#rel .track i{background:var(--gsoft)!important}#rel .track i.on{background:linear-gradient(90deg,var(--g1),var(--g2))!important;box-shadow:0 0 6px var(--g2)!important}
+#rel .lb{color:var(--rose)!important}
+/* 房间画框 */
+#roomView{border:2px solid var(--rg)!important;box-shadow:0 0 0 5px rgba(255,250,248,.9),0 0 0 6px var(--rg2),0 30px 70px rgba(120,60,80,.3)!important}
+#roomView::after{border-color:rgba(255,255,255,.45)!important}
+#roomName span{color:var(--ink2)!important}
+/* 活动栏：不透明，挡住画框线；每个按钮珍珠卡片 */
+#acts{background:linear-gradient(180deg,var(--pb1),var(--pb2))!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;bottom:-96px!important}
+.act{background:linear-gradient(180deg,var(--tile1),var(--tile2))!important;border:1px solid var(--rg2)!important;color:var(--ink)!important}
+.act svg.i{color:var(--rose)!important;border:1px solid var(--rg)!important;background:radial-gradient(circle at 50% 30%,var(--tile1),var(--tileH))!important}
+.act .an{color:var(--ink)!important}.act .ac{color:var(--ink2)!important}
+.act:hover:not(.off){border-color:var(--rg)!important;background:linear-gradient(180deg,var(--tileH),var(--tile2))!important;box-shadow:0 6px 18px rgba(199,109,132,.25)!important}
+.act.off{opacity:.55}.act.off svg.i{opacity:.5}
+.act.off .an{color:var(--ink2)!important}.act.off .ac{color:#c76d84!important}
+.act.exit svg.i{color:var(--ink)!important}
+/* 投影：更短、更淡、更柔，不再像一条线 */
+.cast{filter:brightness(0) blur(7px)!important;opacity:.14!important}
+.floorShadow{background:radial-gradient(rgba(60,30,35,.4),transparent 70%)!important}
+/* 对话框 */
+#talk{background:rgba(74,44,61,.18)!important}
+#talk .who{color:var(--rose)!important}#talk .line{color:var(--ink)!important}#talk .fx{color:#2f8a6a!important}
+#talk .face{border:2px solid #fff!important;box-shadow:0 0 0 1px var(--rg),0 10px 24px rgba(120,60,80,.25)!important;background-color:#fbe9eb!important}
+#talk button{background:var(--tile1)!important;border:1px solid var(--rg)!important;color:var(--ink)!important}
+#talk button:hover{background:var(--tileH)!important}
+#talk button.ok{background:linear-gradient(90deg,var(--g1),var(--g2))!important;color:var(--btnInk)!important;font-weight:700;border:0!important}
+#talk button small{color:var(--rose)!important}
+/* 过场与结算 */
+#cut{background:radial-gradient(circle at 50% 25%,#fff6f4,#f6dfe1 45%,#e9c6cf 100%)!important}
+#cut .card{color:var(--ink)!important}#cut .card .wk{color:var(--rose)!important}#cut .card .go{color:var(--ink2)!important}
+#cut .frame{border:1px solid var(--rg)!important;box-shadow:0 0 0 6px rgba(255,255,255,.7),0 40px 90px rgba(120,60,80,.3)!important;background:#fff!important}
+#cut .bar .line{color:var(--ink)!important}#cut .bar .who{color:var(--rose)!important}#cut .bar .face{border-color:var(--rg)!important;background-color:#fbe9eb!important;box-shadow:0 0 0 3px #fff!important}
+.stamp.ok{color:#b5855a!important;border-color:#c9a06a!important}.stamp.ng{color:var(--rose)!important;border-color:var(--rose)!important}
+.rrow{color:var(--ink2)!important}.rrow b{color:var(--ink)!important}.rrow .rb{background:rgba(199,109,132,.14)!important}
+.rrow.hit .rb i{background:linear-gradient(90deg,#f2d3a8,#c9a06a)!important}.rrow.miss .rb i{background:linear-gradient(90deg,var(--g1),var(--g2))!important}.rrow.miss b{color:var(--rose)!important}
+.res .mono{color:var(--rose)!important}
+/* 地图标签 */
+.spot .tag{font-family:"Songti SC","Noto Serif SC",serif;font-weight:600}
+.spot .tag::before{background:var(--rose)!important;box-shadow:0 0 8px var(--g2)!important}
+.spot:hover{box-shadow:0 0 0 2px #fff,0 0 50px rgba(255,220,225,.8)!important}
+.pops{background:var(--pb1)!important;color:var(--ink)!important;border:1px solid var(--rg)!important}
+
+/* ===== 可切换配色（data-theme 挂在 #stage 上） ===== */
+#stage{--pb1:rgba(255,250,248,.95);--pb2:rgba(252,240,240,.93);--ink:#4a2c3d;--ink2:#8a6476;--tile1:#ffffff;--tile2:#fdf3f3;--tileH:#fbe4e8}
+#stage[data-theme="rose"]{--pb1:rgba(120,34,58,.9);--pb2:rgba(68,16,34,.93);--ink:#fdeaf0;--ink2:rgba(253,234,240,.72);--rg:#d9b77e;--rg2:rgba(217,183,126,.35);--rose:#f1d39b;--g1:#f8e7c3;--g2:#c99a52;--btnInk:#3e0f20;--gsoft:rgba(241,211,155,.16);--tile1:rgba(255,255,255,.1);--tile2:rgba(255,255,255,.03);--tileH:rgba(241,211,155,.18)}
+#stage[data-theme="blush"]{--pb1:rgba(255,222,232,.66);--pb2:rgba(240,168,196,.58);--ink:#5a1f3f;--ink2:#8c4766;--rg:rgba(255,255,255,.9);--rg2:rgba(255,255,255,.55);--rose:#cf3f73;--tile1:rgba(255,255,255,.55);--tile2:rgba(255,255,255,.25);--tileH:rgba(255,255,255,.75)}
+#stage[data-theme="champagne"]{--pb1:rgba(247,236,220,.94);--pb2:rgba(225,203,176,.94);--ink:#4a3224;--ink2:#7d604e;--rg:#b8935f;--rg2:rgba(184,147,95,.35);--rose:#a9694f;--tile1:#fbf4ea;--tile2:#efe1cd;--tileH:#f6e6cf}
+#stage[data-theme="blush"] #dash,#stage[data-theme="blush"] #acts,#stage[data-theme="blush"] #quest,#stage[data-theme="blush"] #talk .box{-webkit-backdrop-filter:blur(22px) saturate(1.4)!important;backdrop-filter:blur(22px) saturate(1.4)!important}
+/* 区域切换、音乐按钮 */
+#themeBtn{position:absolute;right:calc(1.6% + 50px);top:2.4%;z-index:6;height:42px;padding:0 14px;border-radius:999px;cursor:pointer;font:600 12px "Songti SC",serif;letter-spacing:1px;background:linear-gradient(180deg,var(--pb1),var(--pb2));color:var(--ink);border:1px solid var(--rg)}
+#dists{position:absolute;left:1.6%;top:2.4%;z-index:6;display:flex;gap:4px;padding:5px;border-radius:999px}
+#dists button{border:0;background:transparent;padding:7px 16px;border-radius:999px;font:600 13px "Songti SC","Noto Serif SC",serif;color:var(--plum2);cursor:pointer;letter-spacing:1px}
+#dists button.on{background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);font-weight:700}
+.inroom #dists{display:none}
+#musicBtn{position:absolute;right:1.6%;top:2.4%;z-index:6;width:42px;height:42px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--rose)!important}
+#musicBtn svg.i{width:18px;height:18px}#musicBtn.off{color:#b8a3ad!important}
+
+/* 任务卡：压成一条横向胶囊，少挡地图 */
+#quest{width:auto!important;display:flex!important;align-items:center;gap:16px;padding:8px 20px!important;border-radius:999px!important;top:2%!important}
+#quest::after{border-radius:999px!important}
+#quest h3{margin:0!important;font-size:14px!important;white-space:nowrap}
+#quest .q{margin:0!important;min-width:96px;font-size:11px!important}
+#quest .q .b{margin-top:3px}
+.inroom #quest{display:none!important}
+
+/* 活动栏压在房间画框之上，并完全不透明，不再透出画框的线 */
+#acts{z-index:12!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#stage{--base:#fbeeee}#stage[data-theme="rose"]{--base:#4a1426}#stage[data-theme="blush"]{--base:#eab9c9}#stage[data-theme="champagne"]{--base:#e8d8c0}
+#acts{background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base)!important}
+.act{background:linear-gradient(180deg,var(--tile1),var(--tile2)),var(--base)!important}
+#roomView::after{z-index:3!important}
+/* 未开放 / 暂不可用：明确置灰 */
+.act.off{opacity:1!important;filter:grayscale(1) brightness(.72) contrast(.9)!important;cursor:not-allowed}
+.act.off .ac{color:#ffd0da!important;font-weight:600}
+.spot.closed{background:rgba(30,22,28,.38);-webkit-backdrop-filter:grayscale(1) brightness(.75);backdrop-filter:grayscale(1) brightness(.75);border-radius:16px;cursor:not-allowed}
+.spot.closed .tag{background:rgba(70,62,66,.92)!important;color:#e6e0e2!important;border-color:#9a9094!important}
+.spot.closed .tag::before{background:#9a9094!important;box-shadow:none!important}
+
+/* 道具动画 */
+.prop{position:absolute;z-index:4;font-size:52px;line-height:1;transform:translateX(-50%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));pointer-events:none}
+.prop.a-sweep{transform-origin:50% 10%;animation:psweep .45s ease-in-out infinite alternate}
+@keyframes psweep{from{transform:translateX(-95%) rotate(-28deg)}to{transform:translateX(-5%) rotate(28deg)}}
+.prop.a-steam{animation:psteam 1s ease-out infinite}
+@keyframes psteam{0%{transform:translate(-50%,6px) scale(.9);opacity:.5}50%{opacity:1}100%{transform:translate(-50%,-26px) scale(1.08);opacity:.4}}
+.prop.a-bob{animation:pbob .5s ease-in-out infinite alternate}@keyframes pbob{to{transform:translate(-50%,-12px)}}
+.prop.a-spin{animation:pspin .8s linear infinite}@keyframes pspin{to{transform:translateX(-50%) rotate(360deg)}}
+.prop.a-float{animation:pfloat 1.4s ease-in-out infinite}@keyframes pfloat{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-18px)}}
+.prop.a-bite{animation:pbite .45s ease-in-out infinite}@keyframes pbite{50%{transform:translateX(-50%) scale(.8)}}
+.prop.a-shake{animation:pshake .16s linear infinite alternate}@keyframes pshake{from{transform:translateX(-50%) rotate(-18deg)}to{transform:translateX(-50%) rotate(18deg)}}
+.prop.a-swing{transform-origin:50% 100%;animation:pswing 1.3s ease-in-out infinite}@keyframes pswing{0%{transform:translateX(-50%) rotate(-60deg)}60%{transform:translateX(-50%) rotate(70deg)}100%{transform:translateX(-50%) rotate(-60deg)}}
+.prop.a-zoom{animation:pzoom .7s ease-in-out infinite alternate}@keyframes pzoom{from{transform:translateX(-120%)}to{transform:translateX(30%)}}
+.prop.a-bounce{animation:pbounce .4s ease-in-out infinite alternate}@keyframes pbounce{to{transform:translate(-50%,-22px) scale(1.12)}}
+#su.act-sweep{animation:ssweep .45s ease-in-out infinite alternate!important}@keyframes ssweep{from{transform:translateX(-53%) rotate(-2.5deg)}to{transform:translateX(-47%) rotate(2.5deg)}}
+#su.act-shake,#su.act-bounce{animation:sbounce .35s ease-in-out infinite alternate!important}@keyframes sbounce{to{transform:translateX(-50%) translateY(-2%)}}
+#su.act-swing{animation:sswing 1.3s ease-in-out infinite!important}@keyframes sswing{50%{transform:translateX(-50%) rotate(-3deg)}}
+/* 顶部时钟 + 下一项 */
+#clockTop{position:absolute;left:50%;top:1.2%;transform:translateX(-50%);z-index:14;display:flex;align-items:center;gap:12px;padding:6px 8px 6px 18px;border-radius:999px;white-space:nowrap;
+  background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base);border:1px solid var(--rg);color:var(--ink);box-shadow:0 0 0 3px rgba(255,255,255,.25),0 12px 30px rgba(60,20,30,.3);font-size:13px}
+#clockTop .ct-t b{font-size:18px;letter-spacing:1px;margin:0 2px;font-variant-numeric:tabular-nums}
+#clockTop .ct-n{color:var(--ink2);border-left:1px solid var(--rg2);padding-left:12px;max-width:430px;overflow:hidden;text-overflow:ellipsis}
+#clockTop .ct-n.hot{color:var(--rose);font-weight:700;animation:hotb 1s ease-in-out infinite alternate}@keyframes hotb{to{opacity:.55}}
+#clockTop .ct-go{border:0;border-radius:999px;padding:6px 14px;background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);font-weight:700;cursor:pointer}
+#clockTop:not(:has(.ct-go)){padding-right:18px}
+#quest{top:8.5%!important}
+#room{top:8%!important;height:57%!important}
+/* 地图上的约会图钉 */
+.spot .pin{position:absolute;left:50%;top:-8px;transform:translate(-50%,-100%);padding:4px 10px;border-radius:999px;background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);font:700 12px sans-serif;white-space:nowrap;animation:pinb 1s ease-in-out infinite alternate;box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.spot .pin.soft{background:var(--pb1);color:var(--ink);border:1px solid var(--rg)}
+@keyframes pinb{to{transform:translate(-50%,-125%)}}
+.spot.flash{box-shadow:0 0 0 3px #fff,0 0 60px 10px rgba(255,200,215,.9)!important;animation:sflash .6s ease-in-out 4 alternate}@keyframes sflash{to{background:rgba(255,220,230,.35)}}
+.act.appt{border:1.5px solid var(--rose)!important;box-shadow:0 0 14px var(--gsoft)!important}
+/* 计划面板 */
+#restartBtn{position:absolute;right:calc(1.6% + 196px);top:2.4%;z-index:15;height:42px;padding:0 14px;border-radius:999px;cursor:pointer;font:600 12px "Songti SC",serif;letter-spacing:1px;background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base);color:var(--ink);border:1px solid var(--rg)}
+#planBtn{position:absolute;right:calc(1.6% + 124px);top:2.4%;z-index:15;height:42px;padding:0 14px;border-radius:999px;cursor:pointer;font:600 12px "Songti SC",serif;letter-spacing:1px;background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base);color:var(--ink);border:1px solid var(--rg)}
+#themeBtn,#musicBtn{z-index:15!important}
+#plan{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(30,10,20,.45)}
+#plan.show{display:flex}
+#plan .pbox{position:relative;width:min(560px,80%);max-height:80%;overflow:auto;padding:22px 26px;border-radius:24px;background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base);border:1px solid var(--rg);color:var(--ink)}
+#plan h3{margin:4px 0 10px;font:600 16px "Songti SC",serif;letter-spacing:3px;color:var(--rose)}
+#plan ul{list-style:none;margin:0 0 16px;padding:0}#plan li{display:flex;flex-direction:column;gap:2px;padding:9px 12px;margin:6px 0;border-radius:12px;background:var(--tile1);border:1px solid var(--rg2)}
+#plan li span{font-size:12px;color:var(--ink2)}#plan li.done{opacity:.6}#plan li.miss{opacity:.5;text-decoration:line-through}
+#plan .px{position:absolute;right:14px;top:12px;border:0;background:none;font-size:22px;color:var(--ink);cursor:pointer}
+.toast{position:absolute;left:50%;top:9%;transform:translateX(-50%);z-index:40;padding:10px 20px;border-radius:999px;background:linear-gradient(90deg,var(--g1),var(--g2));color:var(--btnInk);font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.3);animation:toastin .4s ease-out}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,-10px)}}
+#dists{top:1.2%!important}
+
+/* 动作栏：永不超出房间宽度，放不下时横向滑动 */
+#acts{left:0!important;right:0!important;transform:none!important;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth;scrollbar-width:none;padding:10px 44px!important}
+#acts::-webkit-scrollbar{display:none}
+#acts::after{display:none!important}
+.act{flex:0 0 126px;min-width:0!important;box-sizing:border-box}
+.act .an,.act .ac{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.act.exit{flex-basis:96px}
+.actNav{position:absolute;bottom:-96px;z-index:13;width:36px;height:calc(var(--actsH,104px));display:flex;align-items:center;justify-content:center;border:0;cursor:pointer;font-size:22px;color:var(--rose);background:linear-gradient(90deg,var(--pb2),transparent)}
+.actNav.r{right:0;background:linear-gradient(270deg,var(--pb2),transparent);border-radius:0 18px 18px 0}.actNav.l{left:0;border-radius:18px 0 0 18px}
+.actNav[hidden]{display:none}
+
+/* 出门按钮：固定在房间左上角 */
+#exitBtn{position:absolute;right:18px;top:18px;z-index:13;height:40px;padding:0 18px 0 14px;border-radius:999px;cursor:pointer;font:600 14px "Songti SC",serif;letter-spacing:2px;
+  color:var(--btnInk);background:linear-gradient(90deg,var(--g1),var(--g2));border:1px solid rgba(255,255,255,.5);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+#exitBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+#exitBtn{display:none!important}
+/* 动作栏：只放能做的，居中 */
+#acts{justify-content:safe center;padding:10px 14px!important}
+.act.more{flex-basis:108px;background:transparent!important;border:1px dashed var(--rg2)!important;opacity:.85}
+.act.more .mn{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--rg2);color:var(--ink2);font-size:13px}
+.act.more .an{color:var(--ink2)!important;font-weight:500}
+.noact{align-self:center;color:var(--ink2);font-size:13px;padding:0 20px}
+#offList{position:absolute;right:14px;bottom:20px;z-index:14;display:none;width:300px;max-height:260px;overflow:auto;padding:10px;border-radius:16px;background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base);border:1px solid var(--rg2);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+#offList.show{display:block}
+#offList .ol{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:10px;font-size:12px;color:var(--ink2)}
+#offList .ol+.ol{border-top:1px solid var(--rg2)}#offList .ol b{color:var(--ink);font-weight:600;white-space:nowrap}
+#offList .ol span{text-align:right}
+.actNav{background:none!important;color:var(--rose);font-size:26px;width:28px}
+
+/* 动作栏 v3：全部任务都显示，紧凑横排卡片，自动换成两行，不滚动不溢出 */
+#acts{flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;padding:8px 10px!important;scroll-snap-type:x proximity}
+.act{flex:0 0 132px!important;scroll-snap-align:start;display:grid!important;grid-template-columns:30px 1fr;grid-template-rows:auto auto;column-gap:8px;row-gap:1px;align-items:center;text-align:left;padding:7px 9px!important}
+.act svg.i{grid-row:1/3;width:16px!important;height:16px!important;padding:6px!important}
+.act .an{font-size:12px!important;letter-spacing:.3px!important}.act .ac{font-size:9.5px!important}
+.act.off{filter:none!important;opacity:.4!important;background:transparent!important}
+.act.off svg.i{opacity:.7}
+.act.off .ac{color:var(--ink2)!important;font-weight:400!important}
+.act.exit{flex-basis:116px!important;position:sticky;right:0;z-index:2;background:linear-gradient(180deg,var(--pb1),var(--pb2)),var(--base)!important;box-shadow:-14px 0 16px -6px rgba(30,6,16,.55)!important}
+.actNav.l{display:none!important}
+.actNav.r{background:none!important;width:30px;height:30px!important;border-radius:50%!important;bottom:-60px;right:126px;border:1px solid var(--rg)!important;color:var(--rose);font-size:20px;line-height:1;background:var(--pb2)!important;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+
+/* 结算 / 过场：深色虚化城市底，文字清楚 */
+#cut{z-index:20!important}
+#stage[data-theme="rose"] #cut{background:linear-gradient(180deg,rgba(52,10,26,.78),rgba(28,6,16,.9)),url(assets/city.jpg) center/cover!important}
+#stage[data-theme="rose"] #cut .card{color:#fdeaf0!important}
+#stage[data-theme="rose"] #cut .card h1{color:#fff3f6!important;text-shadow:0 4px 24px rgba(0,0,0,.45)}
+#stage[data-theme="rose"] #cut .card .wk{color:#f1d39b!important;opacity:1}
+#cut .card .go{opacity:1!important;margin-top:22px;padding:10px 26px;border-radius:999px;font-size:14px!important;letter-spacing:3px;color:var(--btnInk)!important;background:linear-gradient(90deg,var(--g1),var(--g2));box-shadow:0 8px 22px rgba(0,0,0,.35);cursor:pointer}
+
+/* 结算面板 v2：人物 + 数据合成一块居中面板 */
+#cut .res{align-items:flex-end!important;gap:8px!important;margin:18px auto 0!important;width:min(720px,78%);padding:0 34px 0 0;border-radius:28px;
+  background:linear-gradient(180deg,rgba(120,34,58,.92),rgba(58,12,30,.95));border:1px solid rgba(241,211,155,.55);box-shadow:0 0 0 5px rgba(241,211,155,.08),0 30px 70px rgba(0,0,0,.45)}
+#cut .res .rp{height:330px!important;margin:-70px 0 0 18px;flex:0 0 auto;filter:drop-shadow(0 18px 22px rgba(0,0,0,.45))!important}
+#cut .res .rr{flex:1;min-width:0!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:30px 0 30px 10px!important}
+#cut .res .rr::after{display:none!important}
+#cut .res .stamp{font-size:15px}
+#cut .rrow{grid-template-columns:52px 1fr 92px!important;font-size:14px!important;margin:12px 0!important}
+#cut .res .mono{margin-top:16px!important;font-size:14px!important;line-height:1.7}
+#cut .card h1{margin:6px 0 4px!important}
+</style>
+</head>
+<body>
+<div id="stage" data-theme="rose">
+  <div id="world"><img class="map" src="assets/city.jpg" alt="">
+    <div class="gulls"><svg class="gull" style="--y:9%;--d:26s;--dl:0s;--s:1" viewBox="0 0 24 10"><path d="M1 6q5-6 11 0q6-6 11 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg><svg class="gull" style="--y:14%;--d:31s;--dl:-9s;--s:.7" viewBox="0 0 24 10"><path d="M1 6q5-6 11 0q6-6 11 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg><svg class="gull" style="--y:6%;--d:38s;--dl:-20s;--s:.55" viewBox="0 0 24 10"><path d="M1 6q5-6 11 0q6-6 11 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+    <div id="spots"></div><div id="walker"></div></div>
+  <div id="quest"></div>
+  <div id="dists"></div>
+  <button id="musicBtn" title="音乐"></button>
+  <button id="themeBtn" title="换配色">配色</button>
+  <button id="planBtn" title="行程与计划">计划</button>
+  <button id="restartBtn" title="重新开始">重玩</button>
+  <div id="clockTop"></div>
+  <div id="plan"></div>
+  <div id="room">
+    <div id="roomView"><img class="bg" id="roomBg" alt=""><div id="roomName"></div><div id="roomActors"></div><div id="prog"><span id="progT"></span><div class="b"><i id="progB"></i></div></div></div>
+    <button id="exitBtn" title="回到地图">‹ 出门</button><div id="offList"></div><div id="acts"></div>
+  </div>
+  <div id="dash">
+    <div id="dial"></div>
+    <div id="wallet" class="panel"></div>
+    <div id="stats" class="panel"></div>
+    <div id="alerts" class="panel"></div>
+    <div id="rel" class="panel"></div>
+  </div>
+  <div id="talk"><div class="box"><div class="face" id="tFace"></div><div class="who" id="tWho"></div><div class="line" id="tLine"></div><div class="fx" id="tFx"></div><div class="btns" id="tBtns"></div></div></div>
+  <div id="cut"></div>
+</div>
+
+<script>
+const $=q=>document.querySelector(q);
+const KEY='haomen-save-v4';
+const NAME={energy:'精力',mood:'心情',charm:'魅力',talent:'才艺',fame:'名望',love:'好感',friend:'友情',money:'存款',gifts:'礼物',sweets:'甜点',food:'食材',fruit:'水果',protein:'蛋白粉'};
+const COLOR={charm:'#e88aa0',talent:'#b7a3e6',fame:'#e8c26a',love:'#ff8a9a',mood:'#f2a27a',energy:'#ffd36b'};
+const CAP={energy:100,mood:100,charm:100,talent:100,fame:100,love:100,friend:100,money:1e9,gifts:99,sweets:99,food:99,fruit:99,protein:99};
+const DAYS='一二三四五六日';
+const IMG={su:'assets/sutang.png',gu:'assets/guyan.png',mom:'assets/gumom.png',xu:'assets/xuqing.png',kiki:'assets/kiki.png'};
+const PEOPLE={su:'乔妩',gu:'靳野',mom:'靳夫人·沈鸷',xu:'秦骄',kiki:'林骁 Kiki',mama:'妈妈',aunt:'三姑',landlord:'房东',spam:'陌生号码',rich:'富二代'};
+
+/* ---------- 12 周剧情 ---------- */
+const CH=[
+ {t:'海湾市的第一周',g:{money:500,love:8},room:'home',cast:['su'],lines:[
+  ['su','（翻开手机备忘录）第一行：三个月内，嫁进海湾市最有钱的人家。'],
+  ['su','第二行：先把这个月的房租交了。'],
+  ['su','第三行：衣柜里那几条裙子……全扔了。'],
+  ['su','（对着窗外的金冠会所举起手机，咔嚓一声）——那里，迟早是我的主场。']]},
+ {t:'一杯拿铁',g:{love:22,talent:8},room:'cafe',cast:['su','gu'],lines:[
+  ['gu','又见面了，相亲对象小姐。一杯拿铁，不加糖。'],
+  ['su','（三姑介绍的时候，可没说他会天天来。）杯子上写什么名字？'],
+  ['gu','你知道的。靳野。'],
+  ['su','（故意写成「近野」。）您的拿铁，近——野先生。'],
+  ['gu','……有意思。下周画廊开幕，你来吗？'],
+  ['su','看我心情。（名流圈的门，开了。）']]},
+ {t:'第一场晚宴',g:{fame:15,charm:28},room:'elite',cast:['su','gu'],lines:[
+  ['gu','周六的慈善晚宴，我缺个女伴。'],
+  ['su','缺女伴？靳少爷的通讯录里，排队的不止一百个吧。'],
+  ['gu','她们都太无聊。你不一样——你在算计我，而且不打算藏。'],
+  ['su','那你还敢请我？'],
+  ['gu','我就喜欢看人算计。'],
+  ['su','（女伴只是入场券。名片，才是战利品。）']]},
+ {t:'他的邀约',g:{love:45,money:2200},room:'home',cast:['su'],lines:[
+  ['gu','（电话）周末海上有烟火，我的船。来吗？'],
+  ['su','我考虑一下。（挂断，环顾这间十平米的小屋。）'],
+  ['su','……房租还欠着，裙子也还没买。'],
+  ['su','绝不能让他知道我住在这里。这周，钱和他，我全都要。']]},
+ {t:'马场的对手',g:{fame:36,talent:36},room:'elite',cast:['su','xu'],lines:[
+  ['xu','哎呀，你就是靳野新认识的那个……咖啡店的？'],
+  ['su','是呀。您是？'],
+  ['xu','秦骄。我和阿烬，从小一起长大的。'],
+  ['xu','下个月的慈善晚宴要弹琴助兴，乔小姐……会弹吗？'],
+  ['su','会一点。'],
+  ['su','（明天就开始学。）']]},
+ {t:'靳夫人的下午茶',g:{charm:62,fame:54},room:'elite',cast:['su','mom'],lines:[
+  ['mom','乔小姐，坐。喝茶。'],
+  ['mom','你这条裙子……是去年的款吧。'],
+  ['su','夫人好眼力。经典款，不怕过时。'],
+  ['mom','呵。嘴挺甜。阿烬身边的女孩，我见过很多，嘴甜的最多。'],
+  ['su','（她喜欢珍珠，讨厌香水。记下了。）']]},
+ {t:'流言',g:{love:68,mood:70},room:'home',cast:['su'],lines:[
+  ['su','（小报头条：「灰姑娘的算盘」——配图是我在咖啡店端盘子。）'],
+  ['xu','（短信）看到报纸了吗？别太难过哦，亲爱的。'],
+  ['su','……秦骄。'],
+  ['su','标题说对了一半。灰姑娘，可没我这么会算。'],
+  ['su','这周先把心情和他都哄回来，账，慢慢算。']]},
+ {t:'慈善拍卖',g:{talent:68,fame:70},room:'elite',cast:['su','xu'],lines:[
+  ['xu','拍卖会上的演奏，我也报名了哦。'],
+  ['xu','肖邦。我七岁就开始弹了。'],
+  ['su','那黎小姐弹了十七年，一定不会失误吧？'],
+  ['xu','……你什么意思？'],
+  ['su','没什么。就是祝你好运。（这一局，谁输谁出局。）']]},
+ {t:'游艇上的告白',g:{love:75,money:7500},room:'elite',cast:['su','gu'],lines:[
+  ['gu','周末我包了游艇。有话想跟你说。'],
+  ['su','什么话，不能现在说？'],
+  ['gu','现在说就不浪漫了。'],
+  ['su','（礼物要贵得刚好——让他记住，又不起疑。）'],
+  ['su','（可是买礼物的钱，和见他的时间，都不够。）'],
+  ['su','这周是硬仗。']]},
+ {t:'靳家的家宴',g:{fame:84,charm:84,talent:76},room:'elite',cast:['su','mom'],lines:[
+  ['mom','老爷子八十大寿，全家族都会到。'],
+  ['mom','你知道今晚有多少人，在等着看你出丑吗？'],
+  ['su','知道。所以我穿了您最喜欢的珍珠。'],
+  ['mom','……'],
+  ['mom','别给靳家丢脸。'],
+  ['su','放心。我比谁都在乎靳家的脸面——毕竟，以后也是我的。']]},
+ {t:'婚前的考验',g:{love:92,fame:90},room:'elite',cast:['mom','su'],lines:[
+  ['mom','婚，可以结。'],
+  ['su','（她居然松口了。）'],
+  ['mom','但海湾市的名流，得先认你。一个都不能少。'],
+  ['su','夫人放心。这三个月，我做的不就是这件事吗。'],
+  ['mom','呵。我开始有点喜欢你了，乔小姐。'],
+  ['su','我也是，未来的婆婆。']]},
+ {t:'十二周的婚礼',g:{love:96,fame:95,charm:94,money:12000},room:'elite',cast:['su','gu'],lines:[
+  ['gu','最后一周了。紧张吗？'],
+  ['su','紧张的应该是你。'],
+  ['gu','我早就知道你在算计我。从你把我名字写错那天开始。'],
+  ['su','那你为什么还上钩？'],
+  ['gu','因为你是我见过，算得最漂亮的一个。'],
+  ['su','（备忘录第一行。就差打个勾了。）']]},
+];
+const HINT=[
+ '三姑给你安排了和靳野的约会——看顶部行程条，准时赴约。平时去咖啡馆上班攒钱，买条像样的裙子提升魅力。每天要付 ¥30 房租和生活费。',
+ '名流圈开门了。他每天早上会来咖啡馆，拉花最省钱；别忘了练练才艺。',
+ '魅力够 25 才进得了晚宴。晚宴最涨名望。',
+ '好感和存款都要：白天上班，晚上约会，别乱花钱。',
+ '钢琴课和画廊能补才艺，名望还得靠晚宴。',
+ '靳夫人看脸也看排面——买裙子、去晚宴。',
+ '心情太差连小费都少，记得去美容院或者早点睡。',
+ '才艺和名望一起冲，钢琴课白天去，晚宴晚上去。',
+ '最难的一周：存款要 4200，好感也不能掉。打工攒钱，但每天都要见他一面。',
+ '三项一起要，节奏要稳。',
+ '好感和名望——每天见他，每晚赴宴。',
+ '最后一周，四项全满。',
+];
+const DLG={
+ gu:[s=>s.love<20?'你调的拉花……比别家好看。':s.love<50?'这周末有空吗？':s.love<80?'我妈那边，你别太在意。':'我已经想好婚礼办在哪了。'],
+ mom:[s=>s.fame<50?'乔小姐最近……很忙啊。':'城里的太太们，都在聊你。'],
+ xu:[s=>s.talent<50?'琴练得怎么样了？别到时候丢人。':'……哼，算你有两下子。'],
+ kiki:[s=>s.friend<30?'哟，咖啡妹。今天又在算计哪个富二代？':s.friend<60?'靳野那种人，你玩得过他吗？——算了，你比他狠。':'不管你嫁不嫁得进去，我都是你娘家人。'],
+};
+
+/* ---------- 地点与活动 ---------- */
+const wage=s=>150+Math.floor(s.charm/10)*15;
+const RANK=['咖啡店店员','画廊常客','晚宴女伴','名媛新秀','海湾名媛','准靳太太'];
+const rank=s=>RANK[Math.min(5,Math.floor((s.fame+s.love)/36))];
+const LOC={
+ home:{n:'乔妩的唐楼小屋',d:1,open:[0,30],rect:[0,49,23,40],dot:[12,72],door:8},
+ cafe:{n:'糖霜咖啡',d:1,open:[8,22],rect:[2,12,26,34],dot:[18,40],door:8},
+ kitchen:{n:'糖霜咖啡 · 后厨',sub:'cafe',open:[8,22],door:10},
+ mall:{n:'海港名店城',d:1,open:[10,21],rect:[49,46,46,32],dot:[68,74],door:8},
+ elite:{n:'金冠会所',d:1,open:[14,27],rect:[62,4,38,32],dot:[75,36],door:8,ch:2},
+ florist:{n:'晚香花坊',d:2,open:[9,20],rect:[9,37,21,21],dot:[20,56],door:8},
+ gym:{n:'海港名店城 · 云顶健身会所',sub:'mall',open:[8,22],door:10},
+ tea:{n:'海港名店城 · 半岛茶室',sub:'mall',open:[10,20],door:10},
+ dine:{n:'海港名店城 · 云端法餐厅',sub:'mall',open:[11,23],door:10},
+ pet:{n:'晚香花坊 · 猫咖萌宠屋',sub:'florist',open:[9,21],door:10},
+ market:{n:'南湾超市',d:2,open:[8,22],rect:[16,58,30,26],dot:[30,80],door:8},
+ church:{n:'圣心教堂',d:2,open:[7,20],rect:[28,6,13,26],dot:[35,30],door:8},
+ academy:{n:'雅韵进修学院',d:2,open:[9,21],rect:[46,8,22,24],dot:[57,30],door:8},
+ golf:{n:'南湾高尔夫球会',d:2,open:[8,18],rect:[76,6,24,26],dot:[86,30],door:8,ch:3},
+ kart:{n:'南湾卡丁车场',d:2,open:[12,22],rect:[62,37,34,20],dot:[80,55],door:8},
+ bar:{n:'Pier 9 码头酒吧',d:2,open:[18,27],rect:[55,58,30,22],dot:[70,76],door:8},
+ party:{n:'星空天台派对',d:2,open:[20,27],rect:[1,5,23,26],dot:[12,28],door:8,ch:4},
+};
+const DIST={1:{n:'海湾中区',img:'assets/city.jpg'},2:{n:'南湾新区',img:'assets/city2.jpg'}};
+const inLoc=(a,id)=>Array.isArray(a.loc)?a.loc.includes(id):a.loc===id;
+const A=[
+ {id:'rest',loc:'home',ic:'🛏',n:'补个美容觉',h:2,win:[8,22],x:54,d:()=>'精力+22 心情+3',line:'美容觉也是投资，复利的那种。',run:s=>{add('energy',22);add('mood',3)}},
+ {id:'etiquette',loc:'home',ic:'🪞',n:'对镜练仪态',h:2,win:[8,20],x:21,d:()=>'才艺+2 魅力+1 精力-8',line:'下巴再抬高十五度——这是豪门的角度。',need:s=>s.energy<8&&'精力不足',run:s=>{add('talent',2);add('charm',1);add('energy',-8);add('mood',-2)}},
+ {id:'mask',loc:'home',ic:'🧖',n:'敷面膜',h:1,win:[18,28],x:21,d:()=>'魅力+1 心情+4',line:'这张脸，是我最值钱的资产。',run:s=>{add('charm',1);add('mood',4)}},
+ {id:'sleep',loc:'home',ic:'🌙',n:'睡觉（结束今天）',h:0,win:[0,28],x:54,d:()=>'随时可睡，早睡恢复更多',line:'',sleep:true},
+ {id:'work',loc:'cafe',ic:'☕',n:'上白班',h:4,win:[8,14],x:62,d:s=>`¥${wage(s)} 精力-20`,line:'微笑服务。小费，另算。',need:s=>s.energy<20&&'精力不足',
+  run:s=>{const low=s.mood<25,tip=low?0:10+Math.floor(Math.random()*4)*10;add('money',Math.round(wage(s)*(low?.5:1))+tip);add('energy',-20);add('mood',-6);return low?'心情太差，笑得太假，小费少了一半。':`今天的小费：¥${tip}。`}},
+ {id:'night',loc:'cafe',ic:'🌃',n:'上晚班',h:4,win:[16,19],x:62,d:s=>`¥${Math.round(wage(s)*.9)} 精力-24`,line:'再忍忍。以后是别人给我端咖啡。',need:s=>s.energy<24&&'精力不足',
+  run:s=>{const low=s.mood<25;add('money',Math.round(wage(s)*.9*(low?.5:1)));add('energy',-24);add('mood',-8)}},
+ {id:'latte',loc:'cafe',ic:'💘',n:'给靳野做拉花',h:1,win:[8,11],x:62,d:()=>'好感+2 心情+5',line:'拉花画颗心，他会以为是巧合。',need:s=>s.ch<2?'第 2 周解锁':s.energy<4&&'精力不足',run:s=>{add('love',2);add('mood',5);add('energy',-4);s.loveToday=true}},
+ {id:'dress',loc:'mall',ic:'👗',n:'买新裙子',h:0,win:[10,21],x:22,d:()=>'¥200 魅力+5（不花时间）',line:'这条裙子，就为了让他多看两眼。',need:s=>s.money<200&&'钱不够',run:s=>{add('money',-200);add('charm',5)}},
+ {id:'salon',loc:'mall',ic:'💅',n:'美容院',h:2,win:[10,20],x:56,d:()=>'¥80 魅力+2 心情+8',line:'漂亮是需要预算的。',need:s=>s.money<80&&'钱不够',run:s=>{add('money',-80);add('charm',2);add('mood',8);add('energy',-4)}},
+ {id:'piano',loc:'mall',ic:'🎹',n:'钢琴课',h:2,win:[10,18],x:82,d:()=>'¥100 才艺+4 精力-10',line:'弹得好不好不重要，弹给谁听才重要。',need:s=>s.money<100?'钱不够':s.energy<10&&'精力不足',run:s=>{add('money',-100);add('talent',4);add('energy',-10)}},
+ {id:'buyGift',loc:'mall',ic:'🎁',n:'挑一份礼物',h:0,win:[10,21],x:22,d:()=>'¥150 礼物+1（不花时间）',line:'要贵得刚好——让他记住我，又看不穿我。',need:s=>s.money<150&&'钱不够',run:s=>{add('money',-150);add('gifts',1)}},
+ {id:'gallery',loc:'elite',ic:'🖼',n:'艺术品鉴会',h:2,win:[14,18],x:17,d:()=>'¥50 名望+3 才艺+1',line:'画看不懂没关系，太太们的名字要记住。',need:s=>s.money<50?'钱不够':s.energy<8&&'精力不足',run:s=>{add('money',-50);add('fame',3);add('talent',1);add('energy',-8)}},
+ {id:'gala',loc:'elite',ic:'🥂',n:'出席晚宴',h:3,win:[19,21],x:50,d:s=>`¥120 名望+${4+Math.floor(s.charm/25)} 好感+2`,line:'一杯香槟，换十张名片。',need:s=>s.charm<25?'魅力 25 才进得了门':s.money<120?'钱不够':s.energy<12&&'精力不足',
+  run:s=>{add('money',-120);add('fame',4+Math.floor(s.charm/25)+(s.friend>=60?1:0));add('love',2);add('mood',4);add('energy',-12);s.loveToday=true}},
+ {id:'date',loc:'elite',ic:'🌹',n:'和靳野约会',h:2,win:[15,21],x:70,d:s=>`¥60 好感+${4+Math.floor(s.charm/20)} 心情+10`,line:'今晚要让他以为，是他在追我。',need:s=>s.money<60?'钱不够':s.energy<8&&'精力不足',
+  run:s=>{add('money',-60);add('love',4+Math.floor(s.charm/20));add('mood',10);add('energy',-8);s.loveToday=true}},
+ {id:'giftLove',loc:'elite',ic:'💝',n:'送他礼物',h:0,win:[14,27],x:70,d:()=>'好感+5（每天一次）',line:'「路过顺手买的。」——当然不是。',need:s=>s.gifts<1?'没有礼物，去商业街挑':s.giftLove&&'今天送过了',run:s=>{add('gifts',-1);add('love',5);s.giftLove=s.loveToday=true}},
+ /* 家里：营养、健身、家务 */
+ {id:'apple',loc:'home',n:'吃个苹果',h:.5,win:[7,23],x:84,d:()=>'水果-1 精力+8 心情+2',line:'一天一个苹果，皮肤会感谢我。',need:s=>s.fruit<1&&'没有水果，去南湾超市买',run:s=>{add('fruit',-1);add('energy',8);add('mood',2);s.ateWell=true}},
+ {id:'shake',loc:'home',n:'喝蛋白奶昔',h:.5,win:[7,23],x:84,d:()=>'蛋白粉-1 精力+6 魅力+1',line:'蛋白质是马甲线的地基。',need:s=>s.protein<1&&'没有蛋白粉，去南湾超市买',run:s=>{add('protein',-1);add('energy',6);add('charm',1);s.ateWell=true}},
+ {id:'yoga',loc:'home',n:'居家瑜伽',h:1,win:[7,22],x:46,d:()=>'魅力+1 心情+4 精力-6（每天一次）',line:'下犬式、猫牛式——体态好了，穿什么都贵。',need:s=>s.yoga?'今天练过了':s.energy<6&&'精力不足',run:s=>{add('charm',1);add('mood',4);add('energy',-6);s.yoga=true}},
+ {id:'laundry',loc:'home',n:'洗衣叠衣',h:1,win:[8,22],x:30,d:()=>'心情+3 魅力+1（每天一次）',line:'衣服熨得笔挺，名媛的体面从衣柜开始。',need:s=>s.laundry&&'今天洗过了',run:s=>{add('mood',3);add('charm',1);add('energy',-5);s.laundry=true}},
+ /* 超市：营养品 */
+ {id:'buyFruit',loc:'market',n:'买水果',h:0,win:[8,22],x:20,d:()=>'¥30 水果+3（不花时间）',line:'苹果、蓝莓、牛油果——吃进去的都会长在脸上。',need:s=>s.money<30&&'钱不够',run:s=>{add('money',-30);add('fruit',3)}},
+ {id:'buyProtein',loc:'market',n:'买蛋白粉',h:0,win:[8,22],x:60,d:()=>'¥60 蛋白粉+3（不花时间）',line:'香草味的。健身房的姐妹都推荐这个牌子。',need:s=>s.money<60&&'钱不够',run:s=>{add('money',-60);add('protein',3)}},
+ /* 名店城 → 健身会所 */
+ {id:'toGym',loc:'mall',n:'去健身会所',h:0,win:[8,21],x:90,d:()=>'名店城顶层',line:'',go:'gym'},
+ /* 名店城 → 半岛茶室 */
+ {id:'toTea',loc:'mall',n:'去半岛茶室',h:0,win:[10,19],x:84,d:()=>'喝茶、学茶艺',line:'',go:'tea'},
+ {id:'hiTea',loc:'tea',n:'品英式下午茶',h:1,win:[10,19],x:30,d:()=>'¥60 心情+8 精力+6',line:'三层点心架，从下往上吃——这是规矩，也是姿态。',need:s=>s.money<60&&'钱不够',run:s=>{add('money',-60);add('mood',8);add('energy',6)}},
+ {id:'teaArt',loc:'tea',n:'学港式茶艺',h:2,win:[10,18],x:52,d:()=>'¥80 才艺+3 心情+2',line:'洗茶、温杯、高冲低斟。太太们最吃这一套。',need:s=>s.money<80?'钱不够':s.energy<6&&'精力不足',run:s=>{add('money',-80);add('talent',3);add('mood',2);add('energy',-6)}},
+ {id:'teaLady',loc:'tea',n:'陪太太们喝茶',h:2,win:[14,19],x:72,d:()=>'¥100 名望+3（需魅力 20）',line:'她们聊股票、聊儿媳、聊谁家的游艇——我只负责点头和记住。',need:s=>s.charm<20?'魅力 20 才插得上话':s.money<100&&'钱不够',run:s=>{add('money',-100);add('fame',3);add('mood',-2)}},
+ {id:'teaBack',loc:'tea',n:'回到名店城',h:0,win:[10,22],x:10,d:()=>'离开茶室',line:'',go:'mall'},
+ /* 名店城 → 云端法餐厅 */
+ {id:'toDine',loc:'mall',n:'去云端法餐厅',h:0,win:[11,22],x:78,d:()=>'吃顿好的',line:'',go:'dine'},
+ {id:'dineSolo',loc:'dine',n:'一个人吃顿好的',h:1.5,win:[11,22],x:32,d:()=>'¥120 心情+12 精力+15',line:'一个人吃法餐也要点甜点。爱自己，是最好的投资。',need:s=>s.money<120&&'钱不够',run:s=>{add('money',-120);add('mood',12);add('energy',15)}},
+ {id:'dineKiki',loc:'dine',n:'请 Kiki 吃饭',h:2,win:[11,22],x:54,d:()=>'¥150 友情+6 心情+6',line:'Kiki 边切牛排边吐槽她老板——姐妹的八卦，是最好的开胃菜。',need:s=>s.money<150&&'钱不够',run:s=>{add('money',-150);add('friend',6);add('mood',6)}},
+ {id:'dineManner',loc:'dine',n:'学西餐礼仪',h:1.5,win:[14,18],x:74,d:()=>'¥90 魅力+2 才艺+1',line:'刀叉从外往里用，餐巾对折放腿上。豪门的饭桌，一个都不能错。',need:s=>s.money<90&&'钱不够',run:s=>{add('money',-90);add('charm',2);add('talent',1)}},
+ {id:'dineBack',loc:'dine',n:'回到名店城',h:0,win:[11,24],x:10,d:()=>'离开餐厅',line:'',go:'mall'},
+ /* 花坊 → 猫咖萌宠屋 */
+ {id:'toPet',loc:'florist',n:'去隔壁猫咖',h:0,win:[9,20],x:86,d:()=>'撸猫、看宠物',line:'',go:'pet'},
+ {id:'petCat',loc:'pet',n:'撸猫',h:1,win:[9,21],x:34,d:()=>'¥30 心情+10',line:'一只布偶猫跳上我的膝盖，打着呼噜。今天的烦恼，清零。',need:s=>s.money<30&&'钱不够',run:s=>{add('money',-30);add('mood',10)}},
+ {id:'petWalk',loc:'pet',n:'遛狗打工',h:2,win:[9,18],x:56,d:()=>'¥80 精力-12 心情+3',line:'三只柯基，一根牵引绳。路过的太太问我是哪家的——是有钱人家的狗。',need:s=>s.energy<12&&'精力不足',run:s=>{add('money',80);add('energy',-12);add('mood',3)}},
+ {id:'petPhoto',loc:'pet',n:'拍萌宠照发朋友圈',h:.5,win:[9,21],x:74,d:()=>'名望+1 心情+3（每天一次）',line:'「今天的小可爱」——点赞的人里，有三个富太太。',need:s=>s.petPhoto&&'今天发过了',run:s=>{add('fame',1);add('mood',3);s.petPhoto=true}},
+ {id:'petBack',loc:'pet',n:'回到花坊',h:0,win:[9,22],x:10,d:()=>'离开猫咖',line:'',go:'florist'},
+ {id:'pt',loc:'gym',n:'私教训练',h:2,win:[8,20],x:30,d:()=>'¥120 魅力+3 心情+4 精力-16',line:'教练说我的臀腿线条进步了——这条裙子终于能穿了。',need:s=>s.money<120?'钱不够':s.energy<16&&'精力不足',run:s=>{add('money',-120);add('charm',3);add('mood',4);add('energy',-16)}},
+ {id:'pilates',loc:'gym',n:'普拉提',h:2,win:[8,21],x:56,d:()=>'¥80 魅力+2 才艺+1 精力-10',line:'核心收紧，肩膀下沉——优雅是练出来的。',need:s=>s.money<80?'钱不够':s.energy<10&&'精力不足',run:s=>{add('money',-80);add('charm',2);add('talent',1);add('energy',-10)}},
+ {id:'sauna',loc:'gym',n:'桑拿放松',h:1,win:[8,21],x:82,d:()=>'¥40 精力+10 心情+6',line:'汗蒸二十分钟，毛孔和烦恼一起打开。',need:s=>s.money<40&&'钱不够',run:s=>{add('money',-40);add('energy',10);add('mood',6)}},
+ {id:'toMall',loc:'gym',n:'回到名店城',h:0,win:[8,22],x:10,d:()=>'下楼',line:'',go:'mall'},
+ /* 家里 */
+ {id:'clean',loc:'home',n:'打扫卫生',h:1,win:[8,22],x:40,d:()=>'心情+5，今晚睡得更好（三天不扫心情会掉）',line:'地板亮得能照镜子。住得寒酸，也不能邋遢。',need:s=>s.clean&&'今天已经打扫过了',run:s=>{add('mood',5);add('energy',-6);s.clean=true;s.dirty=0}},
+ {id:'bake',loc:'home',n:'在家烘焙',h:2,win:[8,22],x:84,d:()=>'食材-1 甜点+1 心情+6',line:'黄油、糖、一点心机——烤出来的曲奇，最能收买人心。',need:s=>s.food<1?'没有食材，去南湾超市买':s.energy<6&&'精力不足',run:s=>{add('food',-1);add('sweets',1);add('mood',6);add('energy',-6)}},
+ {id:'phone',loc:'home',n:'打给 Kiki',h:0.5,win:[8,23],x:30,d:()=>'友情+3 心情+3（每天一次）',line:'「宝，今天又遇到什么奇葩了？」——和 Kiki 煲电话粥，是我的充电方式。',need:s=>s.phoned&&'今天已经打过了',run:s=>{add('friend',3);add('mood',3);s.phoned=true}},
+ /* 咖啡馆 */
+ {id:'wipe',loc:'cafe',n:'擦桌收银',h:1,win:[8,21],x:40,d:()=>'¥45 精力-6',line:'擦桌子的时候，顺便听听隔壁桌太太们的八卦。',need:s=>s.energy<6&&'精力不足',run:s=>{add('money',45);add('energy',-6);add('mood',-2)}},
+ {id:'toKitchen',loc:'cafe',n:'进入后厨',h:0,win:[8,22],x:72,d:()=>'去后厨看看',line:'',go:'kitchen'},
+ {id:'tart',loc:'kitchen',n:'烤葡式蛋挞',h:2,win:[8,18],x:30,d:()=>'¥60 甜点+1 精力-10',line:'老板说我烤的蛋挞卖得最快。他不知道，我偷偷多放了一勺糖。',need:s=>s.energy<10&&'精力不足',run:s=>{add('money',60);add('sweets',1);add('energy',-10)}},
+ {id:'grind',loc:'kitchen',n:'偷学咖啡师',h:1,win:[8,20],x:62,d:()=>'才艺+1 精力-4',line:'手冲、压粉、拉花——技多不压身。',need:s=>s.energy<4&&'精力不足',run:s=>{add('talent',1);add('energy',-4)}},
+ {id:'nap',loc:'kitchen',n:'员工间打个盹',h:1,win:[8,21],x:86,d:()=>'精力+8',line:'十五分钟的盹，值一百块的面膜。',run:s=>{add('energy',8)}},
+ {id:'toFront',loc:'kitchen',n:'回到前厅',h:0,win:[8,22],x:10,d:()=>'回咖啡馆前厅',line:'',go:'cafe'},
+ /* 花店 */
+ {id:'bouquet',loc:'florist',n:'包花束打工',h:3,win:[9,17],x:46,d:()=>'¥120 心情+4 友情+2',line:'玫瑰要剪斜口，客人要哄开心。',need:s=>s.energy<14&&'精力不足',run:s=>{add('money',120);add('mood',4);add('energy',-14);if(kikiHere())add('friend',2)}},
+ {id:'ikebana',loc:'florist',n:'学插花',h:2,win:[9,18],x:70,d:()=>'¥60 才艺+3 魅力+1',line:'豪门太太的客厅里，从来不缺一盆好花。',need:s=>s.money<60?'钱不够':s.energy<8&&'精力不足',run:s=>{add('money',-60);add('talent',3);add('charm',1);add('energy',-8)}},
+ {id:'flowers',loc:'florist',n:'挑一束花',h:0,win:[9,20],x:20,d:()=>'¥100 礼物+1（比名店城便宜）',line:'Kiki 给我打了八折，还附送一张手写卡。',need:s=>s.money<100&&'钱不够',run:s=>{add('money',-100);add('gifts',1)}},
+ /* 超市 */
+ {id:'groceries',loc:'market',n:'采购烘焙食材',h:1,win:[8,21],x:30,d:()=>'¥40 食材+2',line:'黄油、面粉、草莓——还有一盒打折的车厘子。',need:s=>s.money<40&&'钱不够',run:s=>{add('money',-40);add('food',2)}},
+ {id:'stock',loc:'market',n:'理货兼职',h:3,win:[8,19],x:60,d:()=>'¥110 精力-14',line:'整理货架很治愈。一排排对齐，像我的人生计划。',need:s=>s.energy<14&&'精力不足',run:s=>{add('money',110);add('energy',-14);add('mood',-2)}},
+ {id:'sample',loc:'market',n:'逛试吃摊',h:1,win:[9,21],x:84,d:()=>'心情+4（免费）',line:'免费的芝士和红酒——穷人的米其林。',run:s=>{add('mood',4);add('energy',-2)}},
+ /* 教堂 */
+ {id:'pray',loc:'church',n:'安静祈祷',h:1,win:[7,19],x:50,d:()=>'心情+8',line:'愿主原谅我所有的小算盘……至少原谅一半。',run:s=>{add('mood',8)}},
+ {id:'volunteer',loc:'church',n:'慈善义工',h:3,win:[9,16],x:24,d:()=>'名望+2 心情+5 精力-12',line:'太太们都爱来做义工。我也爱——这里的人脉，比晚宴干净。',need:s=>s.energy<10&&'精力不足',run:s=>{add('fame',2);add('mood',5);add('energy',-12)}},
+ /* 进修学院 */
+ {id:'manners',loc:'academy',n:'名媛礼仪课',h:3,win:[9,18],x:30,d:()=>'¥150 魅力+4 才艺+2',line:'刀叉从外往里用，笑的时候不露牙龈。',need:s=>s.money<150?'钱不够':s.energy<10&&'精力不足',run:s=>{add('money',-150);add('charm',4);add('talent',2);add('energy',-10)}},
+ {id:'arthist',loc:'academy',n:'艺术史讲座',h:2,win:[9,19],x:58,d:()=>'¥80 才艺+3 名望+1',line:'莫奈和马奈，下次晚宴我不会再搞混了。',need:s=>s.money<80?'钱不够':s.energy<6&&'精力不足',run:s=>{add('money',-80);add('talent',3);add('fame',1);add('energy',-6)}},
+ {id:'french',loc:'academy',n:'法语课',h:2,win:[9,19],x:82,d:()=>'¥100 才艺+3 魅力+1',line:'Enchantée——说出口的那一刻，我觉得自己贵了三倍。',need:s=>s.money<100?'钱不够':s.energy<6&&'精力不足',run:s=>{add('money',-100);add('talent',3);add('charm',1);add('energy',-6)}},
+ /* 高尔夫 */
+ {id:'golfLesson',loc:'golf',n:'高尔夫课',h:2,win:[8,16],x:46,d:()=>'¥150 才艺+2 名望+2',line:'挥杆的姿势要优雅——反正球去哪儿不重要。',need:s=>s.money<150?'钱不够':s.energy<8&&'精力不足',run:s=>{add('money',-150);add('talent',2);add('fame',2);add('energy',-8)}},
+ {id:'caddie',loc:'golf',n:'当球童打工',h:3,win:[8,15],x:18,d:()=>'¥140 名望+1 精力-16',line:'背着球包跟在大佬身后，他们聊的都是并购案。',need:s=>s.energy<16&&'精力不足',run:s=>{add('money',140);add('fame',1);add('energy',-16)}},
+ {id:'golfGu',loc:'golf',n:'陪靳野打球',h:2,win:[9,16],x:70,d:()=>'好感+4 心情+6',line:'我故意打偏三杆，让他手把手教我。',need:s=>!guHere()&&'他周末才来球会',run:s=>{add('love',4);add('mood',6);add('energy',-8);s.loveToday=true}},
+ /* 卡丁车 */
+ {id:'kart',loc:'kart',n:'开卡丁车',h:2,win:[12,20],x:48,d:()=>'¥120 心情+20',line:'油门踩到底的时候，什么豪门、什么计划，全都甩在身后。',need:s=>s.money<120?'钱不够':s.energy<12&&'精力不足',run:s=>{add('money',-120);add('mood',20);add('energy',-12)}},
+ {id:'kartGu',loc:'kart',n:'和靳野飙车',h:2,win:[12,20],x:66,d:()=>'¥60 好感+4 心情+12',line:'最后一个弯道我让了他半个车身——男人嘛，要给面子。',need:s=>!guHere()?'他周末才来车场':s.money<60&&'钱不够',run:s=>{add('money',-60);add('love',4);add('mood',12);add('energy',-12);s.loveToday=true}},
+ /* 码头酒吧 */
+ {id:'bartend',loc:'bar',n:'调酒兼职',h:4,win:[18,20],x:50,d:()=>'¥220 名望+1 精力-24',line:'一杯 Negroni，换一个富二代的名片。',need:s=>s.energy<22&&'精力不足',run:s=>{add('money',220);add('fame',1);add('energy',-24);add('mood',-6)}},
+ {id:'drinkKiki',loc:'bar',n:'和 Kiki 喝一杯',h:2,win:[19,22],x:72,d:()=>'¥80 心情+15 友情+6',line:'Kiki 说：「你不用在我面前装名媛。」——那一刻我差点哭了。',need:s=>!kikiHere()?'Kiki 晚上八点后才来':s.money<80&&'钱不够',run:s=>{add('money',-80);add('mood',15);add('friend',6);add('energy',-6)}},
+ {id:'heir',loc:'bar',n:'结识富二代',h:2,win:[19,22],x:26,d:()=>'¥50 名望+2',line:'聊游艇、聊马术、聊他爸——三个话题就够了。',need:s=>s.charm<30?'魅力 30 才能搭上话':s.money<50&&'钱不够',run:s=>{add('money',-50);add('fame',2);add('energy',-6)}},
+ /* 天台派对 */
+ {id:'partyGo',loc:'party',n:'参加派对',h:3,win:[20,21],x:46,d:s=>`¥100 名望+${s.friend>=50?5:3} 心情+8 友情+3`,line:'Kiki 带我认识了半个海湾市的名媛。',need:s=>s.money<100?'钱不够':s.energy<12&&'精力不足',run:s=>{add('money',-100);add('fame',s.friend>=50?5:3);add('mood',8);add('friend',3);add('energy',-12)}},
+ {id:'partyHost',loc:'party',n:'当派对主持',h:3,win:[20,21],x:74,d:()=>'¥90 名望+2（需才艺 40）',line:'麦克风在我手里，全场的目光都在我身上。',need:s=>s.talent<40?'才艺 40 才能主持':s.energy<16&&'精力不足',run:s=>{add('money',90);add('fame',2);add('energy',-18)}},
+ /* 随处送自制甜点 */
+ {id:'giveSweets',loc:['cafe','elite','golf','kart'],n:'送他自制甜点',h:0,win:[8,27],x:66,d:()=>'甜点-1 好感+4（每天一次）',line:'「自己烤的，不好吃别勉强。」——我知道他会全吃完。',need:s=>!guHere()?'他现在不在这里':s.sweets<1?'没有甜点，去后厨或在家烘焙':s.giftLove&&'今天送过东西了',run:s=>{add('sweets',-1);add('love',4);s.giftLove=s.loveToday=true}},
+];
+const EV=[
+ {t:'熟客的小费',who:'su',d:'一位老太太说我笑起来像她年轻时，塞给我一个红包。',o:[['甜甜地收下',{money:100,mood:5}],['推辞，请她喝咖啡（她认识好多太太）',{money:-20,mood:10,fame:1}]]},
+ {t:'房东来敲门',who:'su',d:'房东说下个月要涨房租。',o:[['咬牙答应',{money:-120}],['装可怜讲价',{energy:-10,money:-40}]]},
+ {t:'暴雨',who:'su',d:'出门才发现没带伞，新做的头发……',o:[['冒雨冲',{energy:-12,charm:-1}],['打车，头发比钱重要',{money:-40}]]},
+ {t:'白玫瑰',who:'su',min:2,d:'咖啡馆门口放着一束白玫瑰，卡片上只写了一个「言」。',o:[['发消息谢谢他',{love:3,mood:8}],['已读不回，吊吊他',{love:-2,charm:1}]]},
+ {t:'红酒',who:'xu',min:5,d:'哎呀，不好意思——手滑了。',o:[['笑着说没关系，转身哭给靳野看',{fame:4,love:3,mood:-6}],['也「手滑」一下',{fame:-3,mood:6}]]},
+ {t:'狗仔',who:'su',min:6,d:'楼下有人举着长焦镜头。',o:[['大方挥手，摆个好角度',{fame:3,mood:-4}],['从后门溜走',{energy:-10}]]},
+ {t:'Kiki 的情报',who:'kiki',d:'听说靳野这周末会去南湾的高尔夫球会和卡丁车场，你懂的。',o:[['谢啦，回头请你喝酒',{friend:3,mood:4}],['我早就知道了',{friend:-1,charm:1}]]},
+ {t:'林太太',who:'su',min:3,d:'晚宴上认识的林太太约我周末逛街。',o:[['陪她逛，专挑她喜欢的夸',{money:-100,fame:4,charm:1}],['推说要上班',{fame:-1,money:60}]]},
+];
+
+const ICONS={
+ rest:'M3 18v-6h18v6M3 14h18M7 12V9h5v3',etiquette:'M12 3a5 7 0 1 0 0 14a5 7 0 1 0 0-14M12 17v4M8 21h8',mask:'M12 4a7 8 0 1 0 0 16a7 8 0 1 0 0-16M9 11h.01M15 11h.01M9.5 15q2.5 2 5 0',
+ sleep:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',work:'M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3',
+ night:'M4 11h10v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM14 12h2a2 2 0 0 1 0 4h-2M19 3a3 3 0 1 0 2 5 2.4 2.4 0 0 1-2-5z',
+ latte:'M12 19s-6-3.7-6-8a3.4 3.4 0 0 1 6-2a3.4 3.4 0 0 1 6 2c0 4.3-6 8-6 8z',dress:'M9.5 3h5l-1 4.5L18 21H6l4.5-13.5z',
+ salon:'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z',
+ piano:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3a3 3 0 0 1 3 3zM20 16a3 3 0 1 1-3-3a3 3 0 0 1 3 3z',
+ buyGift:'M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7C9 7 7 6 7 4.5S9 3 12 7zM12 7c3 0 5-1 5-2.5S15 3 12 7z',
+ gallery:'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4',gala:'M8 3h8l-1 7a3 3 0 0 1-6 0zM12 13v7M8 20h8',
+ date:'M12 19s-6-3.7-6-8a3.4 3.4 0 0 1 6-2a3.4 3.4 0 0 1 6 2c0 4.3-6 8-6 8z',giftLove:'M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7C9 7 7 6 7 4.5S9 3 12 7zM12 7c3 0 5-1 5-2.5S15 3 12 7z',
+ exit:'M14 3H6v18h8M10 12h11M17 8l4 4-4 4',bolt:'M13 3L5 14h6l-1 7 8-11h-6z',sad:'M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16M9 10h.01M15 10h.01M9 16q3-2 6 0',
+ broken:'M12 19s-6-3.7-6-8a3.4 3.4 0 0 1 6-2a3.4 3.4 0 0 1 6 2c0 4.3-6 8-6 8zM12 9l-1.5 3 3 1.5L12 17',coin:'M12 4a8 8 0 1 0 0 16a8 8 0 1 0 0-16M9 8l3 4 3-4M12 12v5M9.5 13.5h5',
+ clean:'M14 3l-8 13M4 21l2-5 4 2-2 5zM14 21h6M16 17h4',bake:'M5 11a7 5 0 0 1 14 0v2H5zM4 13h16v2a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3zM9 7V5M12 6V4M15 7V5',
+ phone:'M6 3h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2',
+ wipe:'M4 14h16M6 14v6M18 14v6M8 10c0-3 8-3 8 0',toKitchen:'M4 21V4h16v17M9 21v-7h6v7M8 8h2M14 8h2',toFront:'M4 21V4h16v17M9 21v-7h6v7M8 8h2M14 8h2',
+ tart:'M4 12h16l-2 6H6zM6 12c0-3 3-4 6-4s6 1 6 4M10 10h.01M14 10h.01',grind:'M7 4h10l-2 6H9zM9 10v4h6v-4M8 20h8M12 14v6',nap:'M4 18h16M6 18v-4h12v4M8 14V9h4M15 6h3l-3 3h3',
+ bouquet:'M12 21V11M12 11c-3 0-5-2-5-5a5 5 0 0 1 5 2a5 5 0 0 1 5-2c0 3-2 5-5 5M8 15l4 2 4-2',ikebana:'M8 21h8l1-6H7zM12 15V7M12 7c-2-2-4-1-4 1M12 9c2-2 4-1 4 1',flowers:'M12 21V12M12 12a3 3 0 1 1 0-6a3 3 0 1 1 0 6M7 17q5-3 5-5M17 17q-5-3-5-5',
+ groceries:'M4 6h2l2 10h10l2-7H7M10 20h.01M17 20h.01',stock:'M4 20V8l8-4 8 4v12M4 12h16M4 16h16',sample:'M8 4h8M10 4v6l-4 9h12l-4-9V4',
+ pray:'M12 3v18M7 8h10M8 21h8',volunteer:'M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10zM9 12h6M12 9v6',
+ manners:'M5 21h14M7 21V10h10v11M12 3l5 4H7z',arthist:'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4',french:'M4 5h16v11H9l-5 4zM8 10h8M8 13h5',
+ golfLesson:'M12 21V3l7 3-7 3M8 21h8',caddie:'M9 21l3-9 3 9M12 12V3l6 2.5L12 8M7 21h10',golfGu:'M12 19s-6-3.7-6-8a3.4 3.4 0 0 1 6-2a3.4 3.4 0 0 1 6 2c0 4.3-6 8-6 8z',
+ kart:'M4 15h16l-2-5H8zM7 18a2 2 0 1 0 0-4a2 2 0 1 0 0 4M17 18a2 2 0 1 0 0-4a2 2 0 1 0 0 4M10 10l1-3h3',kartGu:'M4 15h16l-2-5H8zM7 18a2 2 0 1 0 0-4a2 2 0 1 0 0 4M17 18a2 2 0 1 0 0-4a2 2 0 1 0 0 4',
+ bartend:'M6 4h12l-6 8zM12 12v7M8 20h8',drinkKiki:'M5 4h6l-3 5zM8 9v8M6 18h4M13 4h6l-3 5zM16 9v8M14 18h4',heir:'M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.5-.8z',
+ partyGo:'M5 20l4-12 7 7zM14 6l1-3M18 10l3-1M17 5l2-2',partyHost:'M9 4a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0zM5 10a7 7 0 0 0 14 0M12 17v4M8 21h8',
+ giveSweets:'M4 12h16l-2 6H6zM6 12c0-3 3-4 6-4s6 1 6 4',
+ apple:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5M12 7c0-2 1-4 3-4',shake:'M8 3h8l-1 18H9zM7 7h10M12 3V1',
+ yoga:'M12 4a2 2 0 1 0 0 .1M12 7v6M6 10l6 3 6-3M8 21l4-8 4 8',laundry:'M4 3h16v18H4zM4 7h16M12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8M7 5h.01',
+ buyFruit:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5',buyProtein:'M7 6h10v14H7zM9 3h6v3H9zM9 11h6',
+ toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
+ toDine:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineSolo:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineKiki:'M12 20s-7-4-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 6-7 10-7 10',dineManner:'M4 12h16M6 12a6 6 0 0 1 12 0M12 6V4M3 16h18',dineBack:'M4 21V4h16v17M9 21v-7h6v7',
+ toPet:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petCat:'M5 20V9l3-4 2 4h4l2-4 3 4v11zM9 13h.01M15 13h.01M10 16q2 1 4 0',petWalk:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petPhoto:'M4 7h4l2-3h4l2 3h4v13H4zM12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8',petBack:'M4 21V4h16v17M9 21v-7h6v7',pt:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',pilates:'M12 4a2 2 0 1 0 0 .1M4 20h16M7 20l5-9 5 9',sauna:'M8 4q2 2 0 4t0 4M12 4q2 2 0 4t0 4M16 4q2 2 0 4t0 4M4 18h16',toMall:'M4 21V4h16v17M9 21v-7h6v7',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3a3 3 0 0 1 3 3zM20 16a3 3 0 1 1-3-3a3 3 0 0 1 3 3z',mute:'M4 9v6h4l5 4V5L8 9zM17 9l4 6M21 9l-4 6'};
+const icon=k=>`<svg class="i" viewBox="0 0 24 24"><path d="${ICONS[k]||''}"/></svg>`;
+/* ---------- 状态 ---------- */
+let S,SNAP,busy=false;
+function fresh(){return{ch:1,day:1,t:8,energy:80,mood:70,money:150,charm:5,talent:0,fame:0,love:0,friend:10,gifts:0,sweets:0,food:0,fruit:2,protein:0,dirty:0,ateWell:false,appts:[],quests:{},calls:0,laundry:false,yoga:false,loveToday:false,giftLove:false,clean:false,phoned:false,talkedKiki:false,loc:null,lastLoc:'home',dist:1}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({S,SNAP}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.S&&d.SNAP){S={...fresh(),...d.S};SNAP={...fresh(),...d.SNAP};return true}}catch(e){}return false}
+function add(k,v){S[k]=Math.max(0,Math.min(CAP[k],S[k]+v))}
+const hm=t=>`${String(Math.floor(t)%24).padStart(2,'0')}:${t%1?'30':'00'}`;
+const diffText=b=>Object.keys(NAME).filter(k=>S[k]!==b[k]).map(k=>NAME[k]+(S[k]>b[k]?'+':'')+(S[k]-b[k])).join('　');
+const fxText=fx=>Object.keys(fx).map(k=>NAME[k]+(fx[k]>0?'+':'')+fx[k]).join(' ');
+
+/* ---------- 飘字 ---------- */
+function pops(b,anchor){
+  const st=$('#stage').getBoundingClientRect();let k=0;
+  for(const key of Object.keys(NAME)){const d=S[key]-b[key];if(!d)continue;
+    const el=$(`[data-st="${key}"]`)||anchor||$('#dash');const r=el.getBoundingClientRect();
+    const p=document.createElement('div');p.className='pops';p.textContent=NAME[key]+(d>0?' +':' ')+d;
+    p.style.color=d>0?'#2d7a4f':'#a23a48';const K=st.width/1280;p.style.left=((r.left-st.left+r.width/2)/K-30)+'px';p.style.top=((r.top-st.top)/K-10-k*18)+'px';p.style.animationDelay=k*80+'ms';
+    $('#stage').appendChild(p);setTimeout(()=>p.remove(),1700);k++}
+}
+
+/* ---------- 对话框 ---------- */
+function face(who){return IMG[who]?`url(${IMG[who]})`:'none'}
+function talk(who,line,btns,fx){
+  return new Promise(res=>{
+    $('#tFace').style.backgroundImage=face(who);$('#tWho').textContent=PEOPLE[who];$('#tLine').textContent=line;$('#tFx').textContent=fx||'';
+    const box=$('#tBtns');box.innerHTML='';
+    (btns||[['OK']]).forEach(([l,sub],i)=>{const b=document.createElement('button');if(!btns)b.className='ok';b.innerHTML=l+(sub?`<small>${sub}</small>`:'');b.onclick=()=>{$('#talk').classList.remove('show');res(i)};box.appendChild(b)});
+    $('#talk').classList.add('show');
+  });
+}
+
+/* ---------- 城市 ---------- */
+function curDist(){return S.dist||1}
+function renderWorld(){
+  const w=$('#world');w.className=S.t>=19?'night':S.t>=16?'dusk':'';
+  const dist=curDist();const img=$('#world img.map');if(!img.src.endsWith(DIST[dist].img)){img.src=DIST[dist].img}
+  $('#spots').innerHTML=Object.entries(LOC).filter(([id,l])=>l.d===dist).map(([id,l])=>{const [x,y,ww,hh]=l.rect;const lock=l.ch&&S.ch<l.ch;const closed=lock||S.t<l.open[0]||S.t>=l.open[1];
+    return `<div class="spot ${S.lastLoc===id||LOC[S.lastLoc]?.sub===id?'here':''} ${closed?'closed':''}" data-loc="${id}" style="left:${x}%;top:${y}%;width:${ww}%;height:${hh}%"><div class="tag">${lock||closed?'🔒 ':''}${l.n}${lock?` · 第${l.ch}周开放`:closed?` · ${hm(l.open[0])}-${hm(l.open[1])}`:''}</div></div>`}).join('');
+  const here=LOC[LOC[S.lastLoc]?.sub||S.lastLoc];const wk=$('#walker');
+  if(here&&here.d===dist){wk.style.display='';wk.style.left=here.dot[0]+'%';wk.style.top=here.dot[1]+'%';wk.style.backgroundImage=face('su')}else wk.style.display='none';
+  $('#dists').innerHTML=Object.entries(DIST).map(([k,v])=>`<button class="${+k===dist?'on':''}" data-d="${k}">${v.n}</button>`).join('');
+}
+$('#dists').onclick=e=>{const b=e.target.closest('[data-d]');if(!b||busy)return;S.dist=+b.dataset.d;sfx('click');renderWorld();save()};
+$('#spots').onclick=async e=>{
+  const sp=e.target.closest('.spot');if(!sp||busy)return;const id=sp.dataset.loc,l=LOC[id];
+  if(l.ch&&S.ch<l.ch){talk('su',`${l.n}，第 ${l.ch} 周才会对我开放。`);return}
+  if(S.t<l.open[0]||S.t>=l.open[1]){talk('su',`${l.n}现在没开门（${hm(l.open[0])}–${hm(l.open[1])}）。`);return}
+  const from=LOC[LOC[S.lastLoc]?.sub||S.lastLoc];
+  if(id!==S.lastLoc){const cross=from&&from.d!==l.d;S.t+=cross?1:.5;sfx('click');const d=l.dot;$('#walker').style.display='';$('#walker').style.left=d[0]+'%';$('#walker').style.top=d[1]+'%';busy=true;renderDash();await wait(900);busy=false;await apptTick();
+    if(cross)talk('su',`坐渡轮去了${DIST[l.d].n}（路上花了 1 小时）。`)}
+  S.lastLoc=id;enterRoom(id);
+};
+
+/* ---------- 房间 ---------- */
+function npcsIn(id){
+  const n=[];
+  if(id==='elite'&&S.ch>=2&&S.t>=15)n.push(['gu',84]);
+  if(id==='cafe'&&S.ch>=2&&S.t<11)n.push(['gu',84]);
+  if(id==='elite'&&S.ch>=5&&S.t<19)n.push(['xu',33]);
+  if(id==='elite'&&S.ch>=6&&S.t>=19)n.push(['mom',30]);
+  if(id==='golf'&&S.ch>=2&&S.day>=6&&S.t>=9&&S.t<16)n.push(['gu',84]);
+  if(id==='kart'&&S.ch>=2&&S.day>=6)n.push(['gu',84]);
+  if(id==='florist'&&S.t>=9&&S.t<18)n.push(['kiki',82]);
+  if(id==='bar'&&S.t>=19)n.push(['kiki',84]);
+  if(id==='party')n.push(['kiki',18]);
+  return n;
+}
+const guHere=()=>npcsIn(S.loc).some(n=>n[0]==='gu');const kikiHere=()=>npcsIn(S.loc).some(n=>n[0]==='kiki');
+/* 每个房间的人物比例、站位、光照方向和色温：h=人物高度% b=脚底离窗口底部% sk=投影倾斜(光从右来→影子往左为正) len=投影长度 f=色温滤镜 */
+const ROOMFX={
+ home:{h:66,b:9,sk:38,len:.18,f:'brightness(.98) sepia(.14) saturate(1.02) hue-rotate(-6deg)'},
+ cafe:{h:60,b:10,sk:-30,len:.16,f:'brightness(1) sepia(.12) saturate(1.04)'},
+ kitchen:{h:62,b:9,sk:-28,len:.16,f:'brightness(1) sepia(.12)'},
+ mall:{h:58,b:12,sk:34,len:.15,f:'brightness(1.04) sepia(.06) saturate(1.02)'},
+ elite:{h:54,b:13,sk:-36,len:.17,f:'brightness(1.02) sepia(.2) saturate(1.08) hue-rotate(-4deg)'},
+};
+const fxOf=id=>ROOMFX[id]||{h:58,b:11,sk:30,len:.15,f:'brightness(1.02) sepia(.1)'};
+function enterRoom(id){S.loc=id;if(id==='gym')setTimeout(()=>qDone('gym'));if(LOC[id].d===2)setTimeout(()=>qDone('ferry'));$('#stage').classList.add('inroom');$('#room').classList.add('show');$('#quest').style.display='none';renderRoom();renderDash();save()}
+function leaveRoom(){S.loc=null;setTimeout(()=>window.actNavSync&&actNavSync());$('#stage').classList.remove('inroom');$('#room').classList.remove('show');$('#quest').style.display='';renderWorld();renderDash();save()}
+let suX=LOC.home.door;
+function renderRoom(){
+  const id=S.loc,l=LOC[id];if(!id)return;
+  const bg=$('#roomBg');const src=`assets/room_${id}.jpg`;if(bg.dataset.src!==src){bg.dataset.src=src;bg.src=src;bg.onerror=()=>{bg.style.display='none'};bg.onload=()=>{bg.style.display=''}}
+  const g=CH[S.ch-1].g;$('#roomName').innerHTML=l.n+'<span style="opacity:.65;font-weight:500;letter-spacing:0;margin-left:10px">本周 '+Object.keys(g).map(k=>`${NAME[k]} ${S[k]}/${g[k]}${S[k]>=g[k]?' ✓':''}`).join(' · ')+'</span>';
+  const npcs=npcsIn(id);
+  const fx=fxOf(id);
+  const actor=(w,x,isSu)=>{const nm=isSu?'':` data-npc="${w}"`;const idA=isSu?' id="su"':'';const idS=isSu?' id="suCast"':'';const idC=isSu?' id="suSh"':'';
+    return `<img class="cast"${idS} src="${IMG[w]}" style="left:${x}%;bottom:${fx.b}%;height:${fx.h}%;transform:translateX(-50%) scaleY(-${fx.len}) skewX(${fx.sk}deg)">`+
+      `<div class="floorShadow"${idC} style="left:${x}%;bottom:${fx.b-1.5}%"></div>`+
+      `<img class="sprite${isSu?'':' npc'}"${idA}${nm} src="${IMG[w]}" style="left:${x}%;bottom:${fx.b}%;height:${fx.h}%;filter:${fx.f} drop-shadow(0 0 1px rgba(0,0,0,.25))">`+
+      (isSu?'':`<div class="nametag" style="left:${x}%;bottom:${fx.b+fx.h+1}%;top:auto">${PEOPLE[w]}</div>`)};
+  $('#roomActors').innerHTML=npcs.map(([w,x])=>actor(w,x,false)).join('')+actor('su',suX,true);
+  const acts=A.filter(a=>inLoc(a,id));
+  const card=a=>{const why=blocked(a);return `<div class="act ${why?'off':''}" data-act="${a.id}" title="${a.d(S)}${why?' · '+why:''}">${icon(a.id)}<span class="an">${a.n}</span><span class="ac">${why||(a.h?a.h+'小时 · ':'')+a.d(S).split(' ')[0]}</span></div>`};
+  const okA=acts.filter(a=>!blocked(a)),offA=acts.filter(a=>blocked(a));
+  const ap=apptHere(),apOk=ap&&S.t>=ap.from&&S.t<=ap.to;
+  $('#acts').innerHTML=(ap?`<div class="act appt ${apOk?'':'off'}" data-act="appt">${icon('date')}<span class="an">赴约：${ap.kind==='meet'?ap.what:'见'+ap.n}</span><span class="ac">${apOk?(ap.h||2)+'小时':'约在 '+ap.from+':00'}</span></div>`:'')+
+    acts.map(card).join('')+`<div class="act exit" data-act="exit">${icon('exit')}<span class="an">离开</span><span class="ac">回到地图</span></div>`;
+  $('#offList').innerHTML=offA.map(a=>`<div class="ol"><b>${a.n}</b><span>${blocked(a)}</span></div>`).join('');$('#offList').classList.remove('show');
+  requestAnimationFrame(()=>{const b=$('#acts');b.scrollLeft=0;window.actNavSync&&actNavSync()});
+}
+function blocked(a){
+  if(!inLoc(a,S.loc))return '不在这里';
+  if(S.t<a.win[0]||S.t>a.win[1])return `只能在 ${hm(a.win[0])}–${hm(a.win[1])} 开始`;
+  if(a.h&&S.t+a.h>28)return '太晚了，来不及';
+  return (a.need&&a.need(S))||'';
+}
+(()=>{const box=$('#acts');box.insertAdjacentHTML('afterend','<button class="actNav l" hidden>‹</button><button class="actNav r" hidden>›</button>');
+  const L=document.querySelector('.actNav.l'),R=document.querySelector('.actNav.r');
+  window.actNavSync=()=>{const h=box.offsetHeight;[L,R].forEach(b=>b.style.height=h+'px');const vis=getComputedStyle(box).display!=='none'&&box.offsetParent;const over=box.scrollWidth>box.clientWidth+4;L.hidden=!vis||!over||box.scrollLeft<4;R.hidden=!vis||!over||box.scrollLeft+box.clientWidth>=box.scrollWidth-4};
+  L.onclick=()=>{box.scrollLeft-=box.clientWidth*.7};R.onclick=()=>{box.scrollLeft+=box.clientWidth*.7};
+  box.addEventListener('scroll',actNavSync);box.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){box.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+})();
+$('#acts').onclick=e=>{const b=e.target.closest('[data-act]');if(!b||busy)return;if(b.dataset.act==='exit')return leaveRoom();if(b.dataset.act==='more'){$('#offList').classList.toggle('show');return}if(b.dataset.act==='appt')return doAppt();if(!b.classList.contains('off'))doAct(b.dataset.act)};
+$('#roomActors').onclick=async e=>{const n=e.target.closest('[data-npc]');if(!n||busy)return;const w=n.dataset.npc;
+  if(w==='kiki'&&!S.talkedKiki){S.talkedKiki=true;if(S.loc==='florist')setTimeout(()=>qDone('kiki'),400);const b={...S};add('friend',3);add('mood',4);S.t+=.5;renderAll();await talk('kiki',DLG.kiki[0](S),null,diffText(b));}
+  else if(w==='gu'&&!S.talkedGu){S.talkedGu=true;const b={...S};add('love',1);S.loveToday=true;S.t+=.5;renderAll();await talk('gu',DLG.gu[0](S),null,diffText(b));}
+  else await talk(w,(DLG[w]?DLG[w][0](S):'……'));
+  save()};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function doAct(id,fast){
+  const a=A.find(x=>x.id===id);if(!a||blocked(a))return false;
+  if(a.sleep)return endDay(true);
+  if(a.go){sfx('click');suX=LOC[a.go].door;enterRoom(a.go);return true}
+  if(a.call){S.t+=a.h;S.phoned=true;renderAll();await phoneCall(fast);if(S.t>=28)await endDay(false,fast);return true}
+  busy=!fast;
+  const su=$('#su');
+  if(!fast&&su){suX=a.x;su.style.left=a.x+'%';['#suSh','#suCast'].forEach(q=>{const e=$(q);if(e)e.style.left=a.x+'%'});await wait(700);
+    if(a.h){const P=PROPS[a.id]||{p:'✨',a:'float'},fx=fxOf(S.loc),pr=document.createElement('div');pr.className='prop';pr.style.display='none';setPose(POSE[a.id]);pr.style.left=(a.x+7)+'%';pr.style.bottom=(fx.b+fx.h*.3)+'%';$('#roomActors').appendChild(pr);
+      su.classList.add('busy','act-'+P.a);const steps=Math.max(5,Math.round(a.h*2)),dur=steps*.6;actSound(P.s,dur);
+      $('#prog').style.display='block';$('#progT').textContent=a.n+'中…';const pb=$('#progB');pb.style.transition='none';pb.style.width='0';void pb.offsetWidth;pb.style.transition=`width ${dur}s linear`;pb.style.width='100%';
+      const t0=S.t;for(let i=1;i<=steps;i++){await wait(600);S.t=t0+a.h*i/steps;renderDial();renderClock()}S.t=t0;$('#prog').style.display='none';su.classList.remove('busy','act-'+P.a);pr.remove();setPose(null)}}
+  const b={...S};const note=a.run(S)||'';S.t+=a.h;if(!fast){const dm=S.money-b.money;if(dm<0)actSound('register',.9);else if(dm>0)actSound('coins',.8)}
+  pops(b);renderAll();save();busy=false;if(!fast)sfx(S.money>b.money?'coin':'done');
+  if(!fast){const show=S.ch>=2&&['date','giftLove','latte','gala'].includes(id)&&$(`[data-npc="gu"]`)&&Math.random()<.6;
+    if(show)await talk('gu',{date:'下次……还能约你吗？',giftLove:'你怎么知道我喜欢这个？',latte:'今天的心……画歪了。故意的？',gala:'你今晚，比香槟还抢眼。'}[id],null,diffText(b));
+    else await talk('su',note||a.line,null,diffText(b))}
+  if(!fast){questCheck(id);await apptTick();await maybeCall()}
+  if(S.t>=28)await endDay(false,fast);
+  return true;
+}
+let ENDING=false;
+setInterval(()=>{if(S&&S.t>=28&&!ENDING&&!busy&&!S.won&&!document.querySelector('#talk.show,#cut.show'))endDay(false)},800);
+async function endDay(sleep,fast){if(ENDING)return;ENDING=true;try{return await endDay0(sleep,fast)}finally{ENDING=false}}
+async function endDay0(sleep,fast){
+  const b={...S};
+  if(S.ch>=3&&S.metGu&&!S.loveToday)add('love',-2);
+  const cost=S.ch<=3?30:S.ch<=8?50:70;add('money',-cost);
+  add('energy',(sleep?(S.t<=22?38:S.t<=24?30:Math.max(10,30-(S.t-24)*6)):Math.max(8,20-Math.max(0,S.t-24)*4))+(S.clean?8:0)+(S.ateWell?6:0));
+  if(!S.clean)S.dirty=(S.dirty||0)+1;const messy=S.dirty>=3;if(messy)add('mood',-6);
+  const late=!sleep;
+  S.loveToday=S.giftLove=S.talkedGu=S.talkedKiki=S.clean=S.phoned=S.ateWell=S.laundry=S.yoga=false;S.calls=0;S.petPhoto=false;S.dist=1;S.t=8;S.day++;suX=LOC.home.door;
+  if(S.loc)S.loc='home';S.lastLoc='home';
+  const missed=(S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===b.ch&&a.day===b.day);missed.forEach(a=>{a.missed=true;add('mood',-5);add('fame',-1)});
+  if(S.day>7)return endWeek(fast);
+  renderAll();save();
+  if(fast)return;
+  await talk('su',(late?'玩到半夜，被迫回家倒头就睡。':'晚安，海湾市。')+`（房租和生活费 -¥${cost}）`+(b.ch>=3&&b.metGu&&!b.loveToday?'（今天没联系他，好感 -2）':'')+(messy?'（屋子三天没打扫，乱糟糟的，心情 -6）':'')+(b.ateWell?'（吃得健康，精力恢复更多）':''),null,diffText(b));
+  if(missed.length)await talk(missed[0].kind==='meet'?missed[0].who:'aunt',missed[0].kind==='meet'?`你没来「${LOC[missed[0].loc].n}」……放鸽子是吧？（心情 -5，名望 -1）`:`${missed[0].n}在「${LOC[missed[0].loc].n}」等了你一下午！三姑的脸往哪儿搁？（心情 -5，名望 -1）`);
+  if(Math.random()<.3)await event();
+  for(const m of morningNotes())await talk('kiki',m);
+  if(S.metGu&&!guDatesOfWeek().some(a=>a.day===S.day)&&Math.random()<.5){const b={...S};add('love',2);S.loveToday=true;renderAll();pops(b);save();await talk('gu',['早。昨晚梦见你了——别得意。','路过你们店，咖啡还是你做的好喝。','今天开了六个会。想你的时间，比开会长。','晚上有空吗？……算了，周末见。'][Math.floor(Math.random()*4)],null,diffText(b))}
+  if(S.ch>=3&&!pendingAppt()&&Math.random()<.2){S.calls++;await ringPhone(dateOffer())}
+  if(S.loc)enterRoom('home');
+}
+async function event(fast){
+  const pool=EV.filter(e=>!e.min||S.ch>=e.min),e=pool[Math.floor(Math.random()*pool.length)];
+  const i=fast?0:await talk(e.who,e.d,e.o.map(([l,fx])=>[l,fxText(fx)]));
+  const b={...S};const fx=e.o[i][1];for(const k in fx)add(k,fx[k]);renderAll();pops(b);save();
+}
+const CALLS=[
+ {who:'kiki',d:'喂！今晚 Pier 9 有新调酒师，超帅。来不来？',meet:{loc:'bar',from:20,to:22,day:'tonight',what:'和 Kiki 去看帅调酒师',h:2,fx:{friend:5,mood:8,charm:1},line:'调酒师给我推了一杯「乔小姐特调」。Kiki 尖叫了一整晚。'},o:[['来！你请客',{}],['改天吧，我要早睡',{friend:-1,energy:5}]]},
+ {who:'mama',d:'囡囡，在那边还好吗？别太累，家里都好。',o:[['寄点钱回家',{money:-100,mood:10}],['撒个娇说都好',{mood:5}]]},
+ {who:'landlord',d:'乔小姐，楼下水管漏了，这周要收一点维修费。',o:[['按时交',{money:-60}],['求宽限几天',{mood:-5}]]},
+ {who:'gu',min:1,met:true,d:'在干嘛？刚开完会……突然想听你的声音。明早来店里，我请你喝咖啡。',meet:{loc:'cafe',from:8,to:11,day:'tomorrow',what:'靳野约你喝咖啡',h:1,fx:{love:5},seen:true,line:'他把咖啡推过来：「你做的那杯，比这个好喝。」'},o:[['陪他多聊一会儿',{love:3,energy:-8}],['「困了，晚安。」吊吊他',{love:1,charm:1}]],seen:true},
+ {who:'spam',d:'您好，我们这里有一套海景豪宅……',o:[['礼貌挂断',{}],['耐心听完（顺便打听房价）',{mood:-3,talent:1}]]},
+ {who:'xu',min:5,d:'乔小姐？我是秦骄。周末的派对，你会来吧？可别迟到哦。',meet:{loc:'party',from:20,to:23,day:6,what:'秦骄的周六派对',h:2,fx:{fame:4,charm:1,mood:-2},line:'秦骄当众夸我的裙子「很有勇气」。我笑着回她：「你的也是。」全场都听见了。'},o:[['甜甜地说一定到',{}],['「看心情。」',{charm:1,mood:3}]]},
+];
+async function phoneCall(fast){
+  const pool=CALLS.filter(c=>!c.min||S.ch>=c.min),c=pool[Math.floor(Math.random()*pool.length)];
+  if(!fast)sfx('ring');
+  if(!fast&&c.meet){await ringPhone(c);return}
+  const i=fast?0:await talk(c.who,c.d,c.o.map(([l,fx])=>[l,fxText(fx)||'挂断']));
+  const b={...S};const fx=c.o[i][1];for(const k in fx)add(k,fx[k]);if(c.seen)S.loveToday=true;renderAll();pops(b);save();
+}
+
+/* ---------- 自动来电：必须选择接听或挂断，挂断会影响数值 ---------- */
+const RICH=[{n:'贺枭',d:'地产少爷，开一辆骚粉色的跑车',loc:'elite',from:15,to:18,line:'听说你在咖啡店打工？有意思。我家楼盘的售楼处，正好缺个门面。'},
+ {n:'陆鸩',d:'珠宝世家的二公子，手上戴三枚戒指',loc:'golf',from:10,to:14,ch:3,line:'我不打球，我只是来看看谁值得我送一颗钻石。'},
+ {n:'沈戾',d:'游艇俱乐部的少东家，刚从摩纳哥回来',loc:'bar',from:19,to:22,line:'这杯酒算我的。你的时间，开个价？'}];
+const MISS={aunt:{mood:-4,fame:-1},mama:{mood:-5},gu:{love:-3},kiki:{friend:-3},landlord:{money:-40},xu:{fame:-1},spam:{}};
+const MISSLINE={aunt:'三姑在家族群里阴阳怪气：「有的人啊，翅膀硬了。」',mama:'妈妈发来一条语音：「囡囡，是不是在忙……那妈不打扰了。」',gu:'靳野发来一条消息：「……挂我电话？行。」',kiki:'Kiki：「？？？已读不回是吧，姐妹情到此为止。」',landlord:'房东直接从押金里扣了维修费。',xu:'秦骄笑着跟别人说：「她啊，架子大得很。」',spam:'挂得好。'};
+async function apptTick(){
+  if(!guDatesOfWeek().length&&!S.won)await guWeekCall();
+  for(const a of (S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===S.ch&&a.day===S.day)){
+    const here=S.loc===a.loc;
+    if(S.t>a.to){a.missed=true;const b={...S};add('mood',-6);add('fame',-2);if(a.seen||a.who==='gu')add('love',a.kind==='gu'?-8:-6);renderAll();pops(b);save();
+      await talk(a.kind==='meet'?a.who:'aunt',a.kind==='meet'?`${hm(a.to)} 了，你还是没来「${LOC[a.loc].n}」。……放我鸽子？`:`${a.n}在「${LOC[a.loc].n}」等到 ${hm(a.to)}，走了！三姑的脸往哪儿搁！`,null,diffText(b));continue}
+    if(!here&&S.t>=a.from&&!a.late){a.late=true;sfx('ring');await talk('su',`⏰ 已经 ${hm(S.t)} 了！${apptWhat(a)}约在「${LOC[a.loc].n}」，${hm(a.to)} 前必须到，不然要扣分。\n点顶部的「前往」马上过去。`);continue}
+    if(!here&&S.t>=a.from-1.5&&S.t<a.from&&!a.warned){a.warned=true;sfx('ring');await talk('su',`⏰ 提醒：${hm(a.from)} 要去「${LOC[a.loc].n}」——${apptWhat(a)}。\n现在 ${hm(S.t)}，该准备出发了（同城区路上半小时，跨城区一小时）。`)}
+  }renderClock()}
+function pendingAppt(){return (S.appts||[]).find(a=>!a.done&&!a.missed&&a.kind!=='gu')}
+function dateOffer(){const pool=RICH.filter(r=>!r.ch||S.ch>=r.ch);const k=pool[Math.floor(Math.random()*pool.length)];const day=Math.min(7,S.day+1+(Math.random()<.5?1:0));
+  const who=Math.random()<.5?'aunt':'mama';
+  return {who,date:{...k,ch:S.ch,day},d:(who==='aunt'?'囡囡！三姑给你物色了一个——':'囡囡，妈托人给你介绍了一个——')+`${k.n}，${k.d}。周${DAYS[day-1]} ${k.from}:00–${k.to}:00 在「${LOC[k.loc].n}」见一面，去不去？`,
+    o:[['去！见见也不亏',{}],[who==='aunt'?'推了吧，三姑我心里有人了':'不去了妈，我自己会找',{mood:-3}]]}}
+function meetAppt(c){const m=c.meet;let day=m.day==='tonight'?(S.t<m.to-1?S.day:S.day+1):m.day==='tomorrow'?S.day+1:m.day;
+  if(typeof day!=='number'||day<S.day)day=S.day;if(day>7)return null;return {kind:'meet',ch:S.ch,day,loc:m.loc,from:m.from,to:m.to,n:PEOPLE[c.who],what:m.what,h:m.h,fx:m.fx,seen:m.seen,line:m.line,who:c.who}}
+function whenTxt(a){return (a.day===S.day?'今天':a.day===S.day+1?'明天':'周'+DAYS[a.day-1])+` ${a.from}:00–${a.to}:00`}
+function apptWhat(a){return a.what||`和${a.n}相亲`}
+async function ringPhone(c){
+  sfx('ring');const caller=PEOPLE[c.who]||'未知来电';
+  const pick=await talk(c.who,`📞 ${caller} 来电……`,[['接听',''],['挂断','可能会得罪人']]);
+  if(pick===1){const b={...S},fx=MISS[c.who]||{};for(const k in fx)add(k,fx[k]);renderAll();pops(b);save();await talk('su',MISSLINE[c.who]||'挂了。',null,diffText(b));return}
+  const pre=c.meet?meetAppt(c):null;const i=await talk(c.who,c.d+(pre?`\n📍 ${whenTxt(pre)} ·「${LOC[pre.loc].n}」`:''),c.o.map(([l,fx],k)=>[l,k===0&&pre?'记入行程':fxText(fx)||'好']));
+  const b={...S};const fx=c.o[i][1];for(const k in fx)add(k,fx[k]);if(c.seen)S.loveToday=true;
+  const ap=c.date&&i===0?{...c.date}:pre&&i===0?pre:null;
+  if(ap){S.appts.push(ap);renderClock();await talk('su',`记下了：${whenTxt(ap)}，去「${LOC[ap.loc].n}」——${apptWhat(ap)}。\n（顶部行程条会一直提醒，点「前往」直接带我过去。）`)}
+  renderAll();pops(b);save();
+}
+async function maybeCall(){
+  if(S.calls>=2||S.t>=23||Math.random()>.28)return;S.calls++;
+  let c;if(S.ch>=3&&!pendingAppt()&&Math.random()<.3)c=dateOffer();
+  else{const pool=CALLS.filter(x=>(!x.min||S.ch>=x.min)&&(!x.met||S.metGu));c=pool[Math.floor(Math.random()*pool.length)]}
+  await ringPhone(c);
+}
+
+/* ---------- 主线：和靳野的约会（三姑牵线 → 他主动约） ---------- */
+const GUPLAN=[[[3,'cafe',15],[6,'mall',14]],[[3,'elite',16],[6,'mall',15]],[[3,'elite',19],[6,'golf',10]],[[3,'bar',20],[6,'kart',14]],
+ [[3,'elite',17],[6,'golf',10]],[[3,'bar',20],[7,'kart',15]],[[3,'elite',18],[6,'golf',11]],[[3,'bar',20],[6,'kart',14]],
+ [[3,'elite',17],[6,'golf',10]],[[3,'bar',20],[7,'kart',15]],[[3,'elite',18],[6,'golf',11]],[[2,'elite',17],[5,'bar',20]]];
+const GUTALK=[
+ {a:'三姑说你乖巧懂事。……你看起来，可一点都不乖。',ok:'他笑了：「下次，我来约你。」'},
+ {a:'又见面了。今天想聊点什么？',ok:'他把外套披在我肩上：「冷就说。」'},
+ {a:'我身边的人都在说你。好的坏的都有。',ok:'「我只信我看见的。」他说。'},
+ {a:'你今天……很好看。我是说，比平时更好看。',ok:'他送我到楼下，第一次没有马上离开。'}];
+function guDatesOfWeek(){return (S.appts||[]).filter(a=>a.kind==='gu'&&a.ch===S.ch)}
+async function guWeekCall(){
+  if(guDatesOfWeek().length)return;
+  const plan=GUPLAN[Math.min(S.ch,GUPLAN.length)-1];
+  const used=new Set();const ds=plan.map(([day,loc,from])=>{
+    if(day<S.day||(day===S.day&&S.t>from-1))day=S.day+(S.t<from-1?0:1);while(used.has(day))day++;used.add(day);
+    if(LOC[loc].ch&&S.ch<LOC[loc].ch)loc='cafe';return {kind:'gu',ch:S.ch,day:Math.min(7,day),loc,from,to:from+3,n:'靳野',who:'gu',what:'和靳野约会',h:2}});
+  const first=!S.metGu,who=first?'aunt':'gu';
+  const txt=first?`囡囡！三姑托了好大的关系——靳家的小少爷，靳野！海湾市一半的楼都是他家的。\n${ds.map((d,i)=>`周${DAYS[d.day-1]} ${d.from}:00 ${i?'再':'先'}在「${LOC[d.loc].n}」见`).join('，')}。千万别迟到，三姑的脸面全靠你了！`
+    :`这周……想见你两次。${ds.map(d=>`周${DAYS[d.day-1]} ${d.from}:00「${LOC[d.loc].n}」`).join('，')}。别让我等。`;
+  sfx('ring');
+  const pick=await talk(who,`📞 ${PEOPLE[who]} 来电……`,[['接听',''],['挂断','会得罪人']]);
+  S.appts.push(...ds);
+  if(pick===1){const b={...S};add('mood',-4);if(!first)add('love',-3);renderAll();pops(b);save();
+    await talk('su',`电话没接，但短信还是来了：\n${ds.map(d=>`📍 周${DAYS[d.day-1]} ${d.from}:00–${d.to}:00「${LOC[d.loc].n}」和靳野约会`).join('\n')}`,null,diffText(b))}
+  else{await talk(who,txt,[['一定准时到','记入行程']]);await talk('su',`记下了：\n${ds.map(d=>`📍 周${DAYS[d.day-1]} ${d.from}:00–${d.to}:00「${LOC[d.loc].n}」`).join('\n')}\n顶部行程条会提醒我，点「前往」直接过去。`)}
+  renderAll();save();
+}
+async function doGuDate(a){
+  const need=6+S.ch*7,first=!S.metGu,T=GUTALK[Math.min(GUTALK.length-1,Math.floor((S.ch-1)/3))];
+  busy=true;setPose('toast');actSound('clink',1.6);await wait(1500);setPose(null);busy=false;
+  const tag=(k,v)=>`${NAME[k]} ${v}/${need}${v>=need?' ✓':' ✗'}`;
+  const i=await talk('gu',first?T.a:`${T.a}`,[['聊画展和音乐',tag('talent',S.talent)],['撒个娇，用眼神说话',tag('charm',S.charm)],['聊名流圈的八卦',tag('fame',S.fame)]]);
+  const k=['talent','charm','fame'][i],ok=S[k]>=need,b={...S};
+  add('love',ok?10:5);add('fame',ok?3:1);add('mood',ok?6:-2);add('energy',-8);S.loveToday=true;S.metGu=true;S.t+=a.h;a.done=true;
+  renderAll();pops(b);save();
+  await talk('gu',ok?T.ok:'「……嗯。」他礼貌地笑了笑，看了两次表。',null,diffText(b)+(ok?'':`（${NAME[k]}还不够 ${need}，好感只涨了一点）`));
+  questCheck('appt');if(S.t>=28)await endDay(false);
+}
+/* ---------- 相亲赴约 ---------- */
+function apptHere(){return (S.appts||[]).find(a=>!a.done&&!a.missed&&a.ch===S.ch&&a.day===S.day&&a.loc===S.loc)}
+async function doAppt(){const a=apptHere();if(!a||busy)return;if(S.t<a.from||S.t>a.to){talk('su',`${apptWhat(a)}，约的是 ${a.from}:00–${a.to}:00，还没到时间。`);return}
+  if(a.kind==='gu')return doGuDate(a);
+  if(a.kind==='meet'){busy=true;setPose(POSE[a.loc==='cafe'?'latte':'gala']);actSound('clink',1.6);await wait(1800);setPose(null);busy=false;const b={...S};for(const k in a.fx)add(k,a.fx[k]);if(a.seen)S.loveToday=true;S.t+=a.h;a.done=true;renderAll();pops(b);save();
+    await talk(a.who,a.line,null,diffText(b));questCheck(a.loc==='party'?'partyGo':'appt');if(S.t>=28)await endDay(false);return}
+  PEOPLE.rich=a.n;busy=true;const su=$('#su');const fx=fxOf(S.loc);const pr=document.createElement('div');pr.className='prop';pr.style.display='none';setPose('toast');pr.style.left=(suX+7)+'%';pr.style.bottom=(fx.b+fx.h*.3)+'%';$('#roomActors').appendChild(pr);
+  actSound('clink',1.6);await wait(1600);pr.remove();setPose(null);busy=false;
+  const i=await talk('rich',`${a.n}：「${a.line}」`,[['逢场作戏，交换名片','名望+4 心情-2'],['让他买单，顺便狠宰一顿','存款+150 名望+1'],['故意让靳野看见','好感 ±5（看运气）']]);
+  const b={...S};if(i===0){add('fame',4);add('mood',-2)}else if(i===1){add('money',150);add('fame',1)}else{if(Math.random()<.55){add('love',5);S.loveToday=true}else add('love',-5)}
+  S.t+=2;a.done=true;renderAll();pops(b);save();
+  await talk('su',i===2?(S.love>b.love?'靳野看见了。第二天一早，他的花就送到了门口。——吃醋的男人，最好拿捏。':'靳野看见了，一整天没回我消息。……玩脱了。'):'又一张名片进账。三姑在群里夸我懂事。',null,diffText(b));
+  questCheck('appt');if(S.t>=28)await endDay(false);
+}
+/* ---------- 计划（探索任务） ---------- */
+const QUESTS=[
+ {id:'ferry',n:'渡轮初体验',h:'左上角可以切换到另一个城区看看。',r:{mood:5}},
+ {id:'kiki',n:'花店里的闺蜜',h:'听说南湾有家花店，店员很会聊天。',r:{friend:5}},
+ {id:'sample',n:'试吃达人',h:'超市里好像有免费的东西可以尝。',r:{mood:5,money:30}},
+ {id:'tart',n:'后厨的秘密',h:'咖啡馆前厅后面，还有一扇门。',r:{talent:2}},
+ {id:'gym',n:'云顶之上',h:'名店城的顶层，藏着一个让人变美的地方。',r:{charm:2}},
+ {id:'healthy',n:'元气一日',h:'同一天里：吃得健康、做瑜伽、把家打扫干净。',r:{charm:3,mood:5}},
+ {id:'pray',n:'心诚则灵',h:'南湾新区有一座白色的小教堂。',r:{mood:5,fame:1}},
+ {id:'appt',n:'三姑的安排',h:'家里人打电话来的时候，记得接。',r:{money:100}},
+ {id:'party',n:'天台的夜',h:'Kiki 说过，周六晚上有好玩的。',r:{fame:3}},
+];
+function qDone(id){if(!S.quests)S.quests={};if(S.quests[id])return;const q=QUESTS.find(x=>x.id===id);if(!q)return;S.quests[id]=true;const b={...S};for(const k in q.r)add(k,q.r[k]);renderAll();pops(b);save();toast(`✓ 计划完成：${q.n}　${fxText(q.r)}`)}
+function questCheck(id){
+  if(id==='sample')qDone('sample');if(id==='tart')qDone('tart');if(id==='pray')qDone('pray');if(id==='appt')qDone('appt');if(id==='partyGo'||id==='partyHost')qDone('party');
+  if(S.ateWell&&S.yoga&&(S.clean||S.dirty===0&&S.clean))qDone('healthy');
+}
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;$('#stage').appendChild(e);setTimeout(()=>e.remove(),3200)}
+function openPlan(){
+  const qs=QUESTS.map(q=>{const d=S.quests&&S.quests[q.id];return `<li class="${d?'done':''}"><b>${d?'✓':'○'} ${q.n}</b><span>${d?'已完成 · '+fxText(q.r):q.h}</span></li>`}).join('');
+  const ap=(S.appts||[]).filter(a=>a.ch===S.ch&&!a.done).map(a=>`<li class="${a.missed?'miss':''}"><b>📍 周${DAYS[a.day-1]} ${a.from}:00–${a.to}:00</b><span>「${LOC[a.loc].n}」${apptWhat(a)}${a.missed?' · 已错过':''}</span></li>`).join('')||'<li><span>暂时没有约会。接家里人的电话，就会有人给你安排。</span></li>';
+  $('#plan').innerHTML=`<div class="pbox"><button class="px">×</button><h3>本周行程</h3><ul>${ap}</ul><h3>探索计划</h3><ul>${qs}</ul></div>`;$('#plan').classList.add('show');
+  $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
+}
+/* ---------- 顶部时钟与下一项指引 ---------- */
+function nextTask(){
+  const ap=(S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===S.ch&&(a.day>S.day||a.day===S.day&&S.t<=a.to)).sort((x,y)=>x.day-y.day||x.from-y.from)[0];
+  if(ap)return {t:whenTxt(ap),w:`「${LOC[ap.loc].n}」${apptWhat(ap)}`,loc:ap.loc,now:ap.day===S.day&&S.t>=ap.from-1.5&&S.loc!==ap.loc};
+  if(S.ch>=4&&S.day===6&&S.t<=21)return {t:'今晚 20:00',w:'「星空天台派对」——Kiki 等你',loc:'party'};
+  if(S.ch>=3&&S.day>=6&&S.t<16)return {t:'周末',w:'靳野在「南湾高尔夫球会」或「卡丁车场」',loc:'golf'};
+  if(S.ch>=2&&!S.loveToday&&S.t<11)return {t:'11:00 前',w:'靳野早上会来「糖霜咖啡」',loc:'cafe'};
+  return null;
+}
+function renderClock(){
+  const tod=S.t>=24?'凌晨':S.t<12?'上午':S.t<18?'下午':'晚上',n=nextTask();
+  $('#clockTop').innerHTML=`<span class="ct-t">${S.t<18&&S.t>=6?'☀':'☾'} 第${S.ch}周 · 周${DAYS[S.day-1]||'日'} <b>${hm(S.t)}</b> ${tod}</span>`+(n?`<span class="ct-n ${n.now?'hot':''}">${n.now?'⏰ 现在就去':'下一项'} · ${n.t} ${n.w}</span><button class="ct-go" data-go="${n.loc}">前往</button>`:'<span class="ct-n">今天没有安排，自由行动</span>');
+  document.querySelectorAll('.spot .pin').forEach(e=>e.remove());
+  (S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===S.ch&&a.day===S.day).forEach(a=>{const sp=document.querySelector(`.spot[data-loc="${a.loc}"]`);if(sp)sp.insertAdjacentHTML('beforeend',`<div class="pin">📍 ${a.from}:00 ${a.kind==='gu'?'约会':a.kind==='meet'?'有约':'相亲'}</div>`)});
+  if(n){const sp=document.querySelector(`.spot[data-loc="${n.loc}"]`);if(sp&&!sp.querySelector('.pin'))sp.insertAdjacentHTML('beforeend',`<div class="pin soft">★ 下一项</div>`)}
+}
+$('#clockTop').onclick=e=>{const b=e.target.closest('[data-go]');if(!b||busy)return;const id=b.dataset.go,l=LOC[id];
+  if(S.loc)leaveRoom();S.dist=l.d;renderAll();const sp=document.querySelector(`.spot[data-loc="${id}"]`);if(sp){sp.classList.add('flash');setTimeout(()=>sp.classList.remove('flash'),2400)}};
+/* ---------- 早上 Kiki 的提醒 ---------- */
+function morningNotes(){const out=[];const ap=(S.appts||[]).find(a=>!a.done&&!a.missed&&a.ch===S.ch&&a.day===S.day);
+  if(ap)out.push(ap.kind==='meet'?`提醒：今天 ${ap.from}:00 在「${LOC[ap.loc].n}」——${apptWhat(ap)}。点顶部「前往」就能过去。`:`宝！今天 ${ap.from}:00 你在「${LOC[ap.loc].n}」有个相亲，对方叫${ap.n}。别迟到，三姑盯着呢。`);
+  if(S.ch>=4&&S.day===6)out.push('今晚八点「星空天台」有派对！穿好看点，我带你认识人。');
+  if(S.ch>=3&&S.day===6)out.push('内部消息：这个周末靳野会去南湾的高尔夫球会和卡丁车场。你懂的 😏');
+  if(S.ch===1&&S.day===2&&!(S.quests||{}).ferry)out.push('有空来南湾新区找我玩呀，我在花店上班！（地图左上角可以切城区）');
+  if(S.ch===1&&S.day===4&&!(S.quests||{}).tart)out.push('听说你们咖啡店后厨的蛋挞超好卖，去学学？');
+  if(S.ch===2&&S.day===2&&!(S.quests||{}).gym)out.push('名店城顶层新开了个健身会所，身材也是资本哦。');
+  return out}
+
+const unmet=()=>{const g=CH[S.ch-1].g;return Object.keys(g).filter(k=>S[k]<g[k])};
+function resultHTML(c,ok,mono){
+  const rows=Object.keys(c.g).map(k=>{const p=Math.min(100,S[k]/c.g[k]*100);const hit=S[k]>=c.g[k];
+    return `<div class="rrow ${hit?'hit':'miss'}"><span>${NAME[k]}</span><div class="rb"><i style="width:${p}%"></i></div><b>${S[k]} / ${c.g[k]}</b></div>`}).join('');
+  return `<div class="res"><img class="rp" src="${IMG.su}"><div class="rr"><div class="stamp ${ok?'ok':'ng'}">${ok?'达成':'未达标'}</div>${rows}<p class="mono">「${mono}」</p></div></div>`;
+}
+const MONO_OK=['计划第一步，完成。','他开始上钩了。','这只是开始。','离备忘录第一行，又近了一步。'];
+const MONO_NG=['这一周不算。重来——这次一步都不会错。','失误可以，失败不行。从周一重新来。','我不着急。猎人都很有耐心。'];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+async function endWeek(fast){
+  const miss=unmet(),c=CH[S.ch-1];
+  if(miss.length){
+    if(!fast){sfx('fail');await cutCard(`第 ${S.ch} 周 · 结算`,c.t,resultHTML(c,false,pick(MONO_NG)),'点击重来这一周');}
+    S={...SNAP};suX=LOC.home.door;renderAll();save();if(!fast)startWeek();return 'fail';
+  }
+  if(S.ch===CH.length){S.won=true;save();if(!fast){sfx('win');}if(!fast)await cutCard('最终章','十二周的婚礼',`<div class="res"><img class="rp" src="${IMG.su}"><div class="rr"><div class="stamp ok">嫁入豪门</div><p class="mono" style="font-size:15px;line-height:1.9;text-align:left">教堂的钟声响起。靳野在红毯尽头等她，靳夫人替她理了理头纱，秦骄在宾客席上举杯，笑得很勉强。<br>乔妩打开手机备忘录，在第一行后面，打了一个勾。</p></div></div>`,'点击重新开始');if(!fast)newGame();return 'win'}
+  const rh=resultHTML(c,true,pick(MONO_OK));
+  S.ch++;S.day=1;S.t=8;SNAP={...S};save();
+  if(!fast){sfx('win');await cutCard(`第 ${S.ch-1} 周 · 结算`,c.t,rh+`<div class="g" style="margin-top:14px">新身份：${rank(S)}</div>`,'点击进入下一周');startWeek()}
+  return 'pass';
+}
+
+/* ---------- 过场 ---------- */
+function cutCard(wk,title,html,go){return new Promise(res=>{const c=$('#cut');c.innerHTML=`<div class="card"><div class="wk">${wk}</div><h1>${title}</h1>${html}<div class="go">${go}</div></div>`;c.classList.add('show');c.onclick=()=>{c.classList.remove('show');res()}})}
+async function startWeek(){
+  const c=CH[S.ch-1];const cut=$('#cut');
+  await cutCard(`WEEK ${S.ch} / 12`,c.t,`<div class="g">本周目标：${Object.keys(c.g).map(k=>NAME[k]+' '+c.g[k]).join(' · ')}</div>`,'点击继续');
+  const xs=c.cast.length===1?[50]:[34,66];const fx=fxOf(c.room);const H=fx.h*1.25,B=fx.b;
+  cut.innerHTML=`<div class="frame"><div class="stagebox"><img class="bg" src="assets/room_${c.room}.jpg" onerror="this.remove()">`+
+    c.cast.map((w,i)=>`<img class="cast" src="${IMG[w]}" style="left:${xs[i]}%;bottom:${B}%;height:${H}%;transform:translateX(-50%) scaleY(-${fx.len}) skewX(${fx.sk}deg)"><div class="floorShadow" style="left:${xs[i]}%;bottom:${B-1.5}%;width:8%"></div><img class="sprite" data-w="${w}" src="${IMG[w]}" style="left:${xs[i]}%;bottom:${B}%;height:${H}%;filter:${fx.f}" onerror="this.remove()">`).join('')+
+    `</div><div class="bar"><div class="face"></div><div class="txt"><div class="who"></div><div class="line"></div></div><div class="next">点击继续 ▶</div></div></div>`;
+  cut.classList.add('show');
+  for(const [w,l] of c.lines){
+    cut.querySelector('.who').textContent=PEOPLE[w];cut.querySelector('.line').textContent=l;cut.querySelector('.face').style.backgroundImage=face(w);
+    cut.querySelectorAll('.stagebox .sprite').forEach(sp=>sp.classList.toggle('dim',sp.dataset.w!==w&&c.cast.length>1));
+    await new Promise(r=>cut.onclick=r)}
+  cut.classList.remove('show');cut.onclick=null;
+  S.loc=null;renderAll();await talk('su','（提示）'+HINT[S.ch-1]);await guWeekCall();
+}
+function newGame(){S=fresh();SNAP={...S};suX=LOC.home.door;renderAll();save();startWeek()}
+
+
+/* ---------- 音乐：每类场所一首原创曲，Web Audio 实时合成（电钢琴 / 弦乐垫 / 颤音琴 / 贝斯 / 刷鼓 + 混响），切换场所时淡入淡出 ---------- */
+const AU={ctx:null,on:true,master:null,bus:null,sfxBus:null,timer:null,step:0,next:0,song:null,want:'theme',sw:null};
+try{if(localStorage.getItem('haomen-music')==='off')AU.on=false}catch(e){}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function auInit(){
+  if(AU.ctx)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+  const c=AU.ctx=new C();
+  AU.master=c.createGain();AU.master.gain.value=AU.on?.55:0;
+  const comp=c.createDynamicsCompressor();comp.threshold.value=-20;comp.ratio.value=3;AU.master.connect(comp);comp.connect(c.destination);
+  const len=Math.floor(c.sampleRate*2.8),ir=c.createBuffer(2,len,c.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2)}
+  const rv=c.createConvolver();rv.buffer=ir;const rvg=c.createGain();rvg.gain.value=.32;rv.connect(rvg);rvg.connect(AU.master);
+  AU.bus=c.createGain();AU.bus.gain.value=.0001;
+  const tone=c.createBiquadFilter();tone.type='lowpass';tone.frequency.value=8500;AU.bus.connect(tone);tone.connect(AU.master);tone.connect(rv);
+  AU.sfxBus=c.createGain();AU.sfxBus.gain.value=.6;AU.sfxBus.connect(AU.master);AU.sfxBus.connect(rv);
+  const nl=Math.floor(c.sampleRate*.5),nb=c.createBuffer(1,nl,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nl;i++)nd[i]=Math.random()*2-1;AU.noise=nb;
+}
+/* ---- 乐器 ---- */
+function ep(t,m,dur,vol){const c=AU.ctx,f=mtof(m),car=c.createOscillator(),mod=c.createOscillator(),mg=c.createGain(),g=c.createGain();
+  car.frequency.value=f;mod.frequency.value=f;mg.gain.setValueAtTime(f*1.1,t);mg.gain.exponentialRampToValueAtTime(f*.04,t+.9);
+  mod.connect(mg);mg.connect(car.frequency);car.connect(g);g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.006);g.gain.setTargetAtTime(vol*.45,t+.05,.4);g.gain.setTargetAtTime(.0001,t+dur,.25);
+  car.start(t);mod.start(t);car.stop(t+dur+1.6);mod.stop(t+dur+1.6)}
+function vib(t,m,dur,vol){const c=AU.ctx,f=mtof(m),o=c.createOscillator(),o2=c.createOscillator(),h=c.createGain(),g=c.createGain(),tr=c.createOscillator(),tg=c.createGain();
+  o.frequency.value=f;o2.frequency.value=f*4.01;h.gain.value=.1;o2.connect(h);h.connect(g);o.connect(g);
+  tr.frequency.value=5;tg.gain.value=vol*.2;tr.connect(tg);tg.connect(g.gain);g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+dur+1.6);
+  [o,o2,tr].forEach(x=>{x.start(t);x.stop(t+dur+1.7)})}
+function pad(t,notes,dur,vol,bright){const c=AU.ctx,f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=bright||1300;f.Q.value=.4;f.connect(g);g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+Math.min(1.2,dur*.35));g.gain.setValueAtTime(vol,t+dur*.8);g.gain.linearRampToValueAtTime(.0001,t+dur+.8);
+  notes.forEach(m=>[-8,8].forEach(d=>{const o=c.createOscillator();o.type='sawtooth';o.frequency.value=mtof(m);o.detune.value=d;o.connect(f);o.start(t);o.stop(t+dur+.9)}))}
+function organ(t,notes,dur,vol){const c=AU.ctx,g=c.createGain();g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.5);g.gain.setValueAtTime(vol,t+dur-.3);g.gain.linearRampToValueAtTime(.0001,t+dur+1);
+  notes.forEach(m=>[1,2,3,4].forEach((k,i)=>{const o=c.createOscillator(),hg=c.createGain();o.frequency.value=mtof(m)*k;hg.gain.value=[1,.45,.22,.12][i];o.connect(hg);hg.connect(g);o.start(t);o.stop(t+dur+1.1)}))}
+function bass(t,m,dur,vol){const c=AU.ctx,o=c.createOscillator(),o2=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();
+  o.frequency.value=mtof(m);o2.type='triangle';o2.frequency.value=mtof(m);f.type='lowpass';f.frequency.value=650;
+  o.connect(f);o2.connect(f);f.connect(g);g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur+.18);
+  o.start(t);o2.start(t);o.stop(t+dur+.25);o2.stop(t+dur+.25)}
+function pluck(t,m,dur,vol){const c=AU.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type='triangle';o.frequency.value=mtof(m);
+  f.type='lowpass';f.frequency.setValueAtTime(4500,t);f.frequency.exponentialRampToValueAtTime(700,t+.35);o.connect(f);f.connect(g);g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+dur+.35);o.start(t);o.stop(t+dur+.4)}
+function brush(t,vol,len){len=len||.07;const c=AU.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=AU.noise;f.type='bandpass';f.frequency.value=6500;f.Q.value=.6;
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+len);n.connect(f);f.connect(g);g.connect(AU.bus);n.start(t,Math.random()*.3);n.stop(t+len+.02)}
+function kick(t,vol){const c=AU.ctx,o=c.createOscillator(),g=c.createGain();o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(42,t+.12);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.connect(g);g.connect(AU.bus);o.start(t);o.stop(t+.3)}
+/* ---- 和弦与曲目 ---- */
+const Q={maj9:[4,7,11,14],m9:[3,7,10,14],m7:[3,7,10],d9:[4,10,14],d13:[4,10,14,21],m7b5:[3,6,10],maj7:[4,7,11],sus:[5,7,10,14],add9:[4,7,14],m11:[3,7,10,17]};
+const CC=(r,q)=>({r,v:Q[q].map(i=>{let m=r+i;while(m<55)m+=12;while(m>75)m-=12;return m}).sort((a,b)=>a-b)});
+function rng(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function makeMel(sg){const r=rng(sg.seed),out=[],half=Math.floor(sg.prog.length/2);
+  const phrase=[];for(let bar=0;bar<half;bar++){const p=sg.mp[Math.floor(r()*sg.mp.length)];phrase.push(p.map(([s,l])=>[s,l,r()]))}
+  sg.prog.forEach((c,bar)=>{const pool=c.v.map(m=>m+12).concat(c.v.slice(-2).map(m=>m+24)).filter(m=>m>=66&&m<=88);
+    const ph=phrase[bar%half],last=bar===sg.prog.length-1;
+    ph.forEach(([s,l,k],i)=>{let m=pool[Math.floor(k*pool.length)];if(last&&i===ph.length-1)m=c.r+36>88?c.r+24:c.r+36;out.push([bar*8+s,m,l])})});return out}
+const MP_D=[[[0,2],[2,1],[3,1],[4,3]],[[0,1],[1,1],[2,2],[5,3]],[[1,2],[3,1],[4,4]],[[0,3],[4,2],[6,2]]];
+const MP_S=[[[0,4],[5,3]],[[2,6]],[[0,6]],[[0,2],[4,4]]];
+const SONGS={
+ theme:{bpm:96,swing:.16,seed:7,prog:[CC(38,'maj9'),CC(47,'m9'),CC(40,'m9'),CC(45,'d13'),CC(42,'m7'),CC(47,'d9'),CC(40,'m9'),CC(45,'d13')],comp:'ep',cs:[0,3,6],bass:'two',drums:'brush',lead:'vib',mp:MP_D},
+ home:{bpm:72,swing:.1,seed:11,prog:[CC(41,'maj9'),CC(45,'m7'),CC(46,'maj9'),CC(36,'sus'),CC(41,'maj9'),CC(45,'m7'),CC(46,'maj9'),CC(36,'d9')],comp:'ep',cs:[0,5],pad:1100,bass:'long',drums:'lofi',lead:'vib',mp:MP_S},
+ cafe:{bpm:124,swing:0,seed:3,prog:[CC(41,'maj9'),CC(38,'m9'),CC(43,'m9'),CC(36,'d13'),CC(45,'m7'),CC(38,'d9'),CC(43,'m9'),CC(36,'d13')],comp:'pluck',cs:[0,3,5,6],bass:'bossa',drums:'brush',lead:'vib',mp:MP_D},
+ chic:{bpm:104,swing:0,seed:19,prog:[CC(43,'maj9'),CC(40,'m9'),CC(45,'m9'),CC(38,'d9'),CC(43,'maj9'),CC(40,'m9'),CC(45,'m11'),CC(38,'d13')],comp:'pluck',cs:[0,2,4,6],pad:1600,bass:'two',drums:'pop',lead:'ep',mp:MP_D},
+ elite:{bpm:80,swing:0,seed:23,prog:[CC(39,'maj9'),CC(36,'m9'),CC(41,'m9'),CC(46,'d13'),CC(43,'m7'),CC(36,'d9'),CC(41,'m11'),CC(46,'sus')],comp:'arp',pad:1500,bass:'long',drums:'',lead:'vib',mp:MP_S},
+ bar:{bpm:74,swing:.22,seed:29,prog:[CC(38,'m9'),CC(43,'d13'),CC(36,'maj9'),CC(45,'d9'),CC(38,'m9'),CC(43,'d13'),CC(40,'m7b5'),CC(45,'d9')],comp:'ep',cs:[0,3],bass:'walk',drums:'brush',lead:'ep',mp:MP_S},
+ party:{bpm:118,swing:0,seed:31,prog:[CC(45,'m9'),CC(41,'maj9'),CC(36,'maj9'),CC(43,'sus'),CC(45,'m9'),CC(41,'maj9'),CC(36,'add9'),CC(43,'sus')],comp:'pluck',cs:[1,3,5,7],pad:2200,bass:'pump',drums:'house',lead:'vib',mp:MP_D},
+ sport:{bpm:128,swing:0,seed:37,prog:[CC(36,'add9'),CC(43,'sus'),CC(45,'m7'),CC(41,'maj9'),CC(36,'add9'),CC(43,'sus'),CC(41,'maj9'),CC(43,'d9')],comp:'pluck',cs:[0,2,3,5,6],bass:'eight',drums:'pop',lead:'vib',mp:MP_D},
+ tea:{bpm:70,swing:.06,seed:71,prog:[CC(43,'maj9'),CC(40,'m7'),CC(45,'m9'),CC(38,'sus'),CC(43,'maj9'),CC(47,'m7'),CC(45,'m9'),CC(38,'d9')],comp:'arp',pad:1200,bass:'long',drums:'',lead:'ep',mp:MP_S},
+ dine:{bpm:84,swing:.2,seed:73,prog:[CC(41,'maj9'),CC(38,'m9'),CC(43,'m7'),CC(36,'d13'),CC(41,'maj9'),CC(45,'m7'),CC(38,'m9'),CC(43,'d9')],comp:'ep',cs:[0,3,5],bass:'walk',drums:'brush',lead:'vib',mp:MP_S},
+ pet:{bpm:108,swing:.1,seed:79,prog:[CC(36,'add9'),CC(41,'maj9'),CC(45,'m7'),CC(43,'sus'),CC(36,'add9'),CC(41,'maj9'),CC(40,'m7'),CC(43,'d9')],comp:'pluck',cs:[0,2,4,6],bass:'two',drums:'lofi',lead:'vib',mp:MP_D},
+ kitchen:{bpm:112,swing:.12,seed:43,prog:[CC(38,'add9'),CC(43,'maj9'),CC(40,'m7'),CC(45,'sus'),CC(38,'add9'),CC(43,'maj9'),CC(47,'m7'),CC(45,'d9')],comp:'ep',cs:[0,2,5],bass:'bossa',drums:'lofi',lead:'ep',mp:MP_D},
+ gym:{bpm:126,swing:0,seed:47,prog:[CC(40,'m9'),CC(36,'maj9'),CC(43,'add9'),CC(38,'sus'),CC(40,'m9'),CC(36,'maj9'),CC(43,'add9'),CC(38,'d9')],comp:'pluck',cs:[0,1,2,3,4,5,6,7],pad:1800,bass:'pump',drums:'house',lead:'vib',mp:MP_D},
+ florist:{bpm:88,swing:.08,seed:53,prog:[CC(43,'maj9'),CC(47,'m7'),CC(40,'m9'),CC(45,'sus'),CC(43,'maj9'),CC(48,'maj7'),CC(47,'m7'),CC(45,'d9')],comp:'arp',pad:1300,bass:'two',drums:'',lead:'vib',mp:MP_S},
+ market:{bpm:116,swing:.18,seed:59,prog:[CC(36,'add9'),CC(41,'maj9'),CC(43,'d9'),CC(36,'add9'),CC(45,'m7'),CC(41,'maj9'),CC(43,'sus'),CC(43,'d9')],comp:'pluck',cs:[0,3,4,7],bass:'two',drums:'pop',lead:'ep',mp:MP_D},
+ academy:{bpm:66,swing:0,seed:61,prog:[CC(41,'maj7'),CC(38,'m9'),CC(46,'maj9'),CC(36,'d9'),CC(41,'maj7'),CC(45,'m7'),CC(46,'maj9'),CC(36,'sus')],comp:'arp',pad:1400,bass:'long',drums:'',lead:'ep',mp:MP_S},
+ kart:{bpm:140,swing:0,seed:67,prog:[CC(45,'m7'),CC(41,'maj9'),CC(43,'sus'),CC(40,'m7'),CC(45,'m7'),CC(41,'maj9'),CC(43,'sus'),CC(44,'d9')],comp:'pluck',cs:[0,2,4,6],bass:'eight',drums:'house',lead:'vib',mp:MP_D},
+ church:{bpm:56,swing:0,seed:41,prog:[CC(36,'maj7'),CC(45,'m7'),CC(41,'maj9'),CC(43,'sus'),CC(36,'maj7'),CC(40,'m7'),CC(41,'maj9'),CC(43,'sus')],comp:'organ',bass:'long',drums:'',lead:'vib',mp:MP_S},
+};
+Object.values(SONGS).forEach(s=>s._mel=makeMel(s));
+const SONGMAP={home:'home',cafe:'cafe',kitchen:'kitchen',mall:'chic',gym:'gym',tea:'tea',dine:'dine',pet:'pet',florist:'florist',market:'market',academy:'academy',elite:'elite',church:'church',golf:'sport',kart:'kart',bar:'bar',party:'party'};
+function play(sg,st,t0){const N=sg.prog.length,bar=Math.floor(st/8)%N,b=st%8,c=sg.prog[bar],E=60/sg.bpm/2,t=t0+((b%2)?E*sg.swing:0),R=c.r;
+  if(sg.comp==='ep'&&sg.cs.includes(b))c.v.forEach((m,i)=>ep(t+i*.014,m,E*1.6,.032));
+  if(sg.comp==='pluck'&&sg.cs.includes(b))c.v.forEach((m,i)=>pluck(t+i*.008,m,E*.8,.034));
+  if(sg.comp==='arp'){const m=c.v[b%c.v.length]+(b>=4?12:0);ep(t,m,E*2.2,.04)}
+  if(sg.comp==='organ'&&b===0)organ(t,c.v,E*8,.022);
+  if(sg.pad&&b===0)pad(t,c.v.slice(0,3),E*8,.014,sg.pad);
+  switch(sg.bass){
+   case 'two':if(b===0)bass(t,R,E*3,.3);if(b===4)bass(t,R+7,E*3,.24);break;
+   case 'bossa':if(b===0)bass(t,R,E*1.4,.28);if(b===3)bass(t,R+7,E*.9,.22);if(b===4)bass(t,R+7,E*1.4,.24);if(b===7)bass(t,R,E*.9,.2);break;
+   case 'walk':if(b%2===0)bass(t,R+[0,4,7,9][b/2],E*1.7,.28);break;
+   case 'pump':if(b%2===1)bass(t,R,E*.8,.26);break;
+   case 'eight':bass(t,R+(b===6?7:0),E*.75,.2);break;
+   case 'long':if(b===0)bass(t,R,E*7,.2);break;
+  }
+  switch(sg.drums){
+   case 'brush':brush(t,b%2?.016:.028);if(b===2||b===6)brush(t,.04,.18);break;
+   case 'lofi':if(b===2||b===6)brush(t,.04,.22);if(b%2)brush(t,.012);break;
+   case 'house':if(b%2===0)kick(t,.38);if(b%2)brush(t,.045);break;
+   case 'pop':if(b===0||b===4)kick(t,.32);if(b===2||b===6)brush(t,.06,.15);brush(t,.015);break;
+  }
+  const pos=st%(N*8);sg._mel.forEach(n=>{if(n[0]===pos)(sg.lead==='ep'?ep:vib)(t,n[1],E*n[2],sg.lead==='ep'?.05:.05)});
+}
+function schedule(){const c=AU.ctx,sg=SONGS[AU.song];if(!sg)return;const E=60/sg.bpm/2;
+  while(AU.next<c.currentTime+.3){play(sg,AU.step,AU.next);AU.step++;AU.next+=E}}
+function musicSet(k){AU.want=k;if(!AU.ctx||!AU.timer||AU.song===k&&!AU.sw)return;if(AU.song===k)return;
+  const c=AU.ctx,g=AU.bus.gain;g.cancelScheduledValues(c.currentTime);g.setTargetAtTime(.0001,c.currentTime,.2);
+  clearTimeout(AU.sw);AU.sw=setTimeout(()=>{AU.sw=null;AU.song=AU.want;AU.step=0;AU.next=c.currentTime+.05;g.cancelScheduledValues(c.currentTime);g.setTargetAtTime(1,c.currentTime,.5)},650)}
+function musicStart(){auInit();if(!AU.ctx)return;if(AU.ctx.state==='suspended')AU.ctx.resume();if(AU.timer)return;
+  AU.song=AU.want;AU.step=0;AU.next=AU.ctx.currentTime+.1;AU.bus.gain.setTargetAtTime(1,AU.ctx.currentTime,.8);AU.timer=setInterval(schedule,50)}
+function musicToggle(){AU.on=!AU.on;try{localStorage.setItem('haomen-music',AU.on?'on':'off')}catch(e){}if(AU.master)AU.master.gain.setTargetAtTime(AU.on?.55:0,AU.ctx.currentTime,.1);renderMusicBtn()}
+function renderMusicBtn(){$('#musicBtn').innerHTML=icon(AU.on?'music':'mute');$('#musicBtn').classList.toggle('off',!AU.on)}
+function sfx(k){if(!AU.ctx||!AU.on)return;const t=AU.ctx.currentTime+.01;
+  const seq={click:[[84,.05]],coin:[[88,.06],[95,.14]],done:[[79,.06],[84,.12]],ring:[[88,.09],[84,.09],[88,.09],[84,.09]],
+    win:[[72,.12],[76,.12],[79,.12],[84,.4]],fail:[[76,.14],[72,.14],[67,.4]]}[k]||[];
+  let o=0;const keep=AU.bus;AU.bus=AU.sfxBus;seq.forEach(([m,d])=>{vib(t+o,m,d,.09);o+=d*.9});AU.bus=keep}
+document.addEventListener('pointerdown',()=>{musicStart()},{once:false});
+$('#musicBtn').onclick=e=>{e.stopPropagation();musicStart();musicToggle()};
+
+
+/* ---------- 做事时：人物换成真实动作姿势 ---------- */
+const POSE={clean:'mop',wipe:'mop',bake:'bake',tart:'bake',apple:'eat',sample:'eat',shake:'drink',yoga:'yoga',pilates:'yoga',laundry:'laundry',phone:'phone',
+ work:'barista',night:'barista',latte:'barista',grind:'barista',golfLesson:'golf',caddie:'golf',golfGu:'golf',bartend:'bartend',pt:'dumbbell',
+ gala:'toast',drinkKiki:'toast',heir:'toast',partyGo:'toast',partyHost:'toast',date:'toast',appt:'toast',bouquet:'flower',ikebana:'flower',
+ groceries:'cart',stock:'cart',pray:'pray',etiquette:'read',french:'read',arthist:'read',manners:'read',volunteer:'cart'};
+const POSE_OK={};Object.values(POSE).forEach(k=>{if(POSE_OK[k]!==undefined)return;POSE_OK[k]=false;const im=new Image();im.onload=()=>POSE_OK[k]=true;im.src=`assets/pose_${k}.png`});
+function setPose(k){const src=k&&POSE_OK[k]?`assets/pose_${k}.png`:IMG.su;['#su','#suCast'].forEach(q=>{const e=$(q);if(e)e.src=src})}
+/* ---------- 做事时的音效 ---------- */
+const PROPS={
+ rest:{p:'💤',a:'float'},etiquette:{p:'📚',a:'bob'},mask:{p:'✨',a:'float'},clean:{p:'🧹',a:'sweep',s:'vacuum'},bake:{p:'🧁',a:'steam',s:'oven'},
+ apple:{p:'🍎',a:'bite',s:'crunch'},shake:{p:'🥤',a:'shake',s:'blend'},yoga:{p:'🧘‍♀️',a:'float'},laundry:{p:'🧺',a:'bob',s:'water'},phone:{p:'📱',a:'bob'},
+ work:{p:'☕',a:'steam',s:'dishes'},night:{p:'☕',a:'steam',s:'espresso'},wipe:{p:'🧽',a:'sweep',s:'dishes'},latte:{p:'💗',a:'float',s:'pour'},
+ tart:{p:'🥧',a:'steam',s:'oven'},grind:{p:'🫘',a:'spin',s:'grind'},nap:{p:'💤',a:'float'},
+ salon:{p:'💅',a:'bob',s:'spray'},piano:{p:'🎹',a:'bob',s:'piano'},pt:{p:'🏋️‍♀️',a:'bob',s:'clink'},pilates:{p:'🧘‍♀️',a:'float'},sauna:{p:'♨️',a:'steam',s:'steam'},
+ bouquet:{p:'💐',a:'bob',s:'paper'},hiTea:{p:'',a:'bob',s:'clink'},teaArt:{p:'',a:'bob',s:'pour'},teaLady:{p:'',a:'bob',s:'clink'},dineSolo:{p:'',a:'bob',s:'clink'},dineKiki:{p:'',a:'bob',s:'clink'},dineManner:{p:'',a:'bob',s:'clink'},petCat:{p:'',a:'float'},petWalk:{p:'',a:'bob'},petPhoto:{p:'',a:'bob'},ikebana:{p:'🌸',a:'float',s:'paper'},groceries:{p:'🛒',a:'zoom',s:'cart'},stock:{p:'📦',a:'bob',s:'cart'},sample:{p:'🧀',a:'bite',s:'crunch'},
+ pray:{p:'🕯️',a:'float'},volunteer:{p:'🥣',a:'bob',s:'clink'},manners:{p:'🍽️',a:'bob',s:'clink'},arthist:{p:'🖼️',a:'float'},french:{p:'💬',a:'float'},
+ golfLesson:{p:'⛳',a:'swing',s:'swing'},caddie:{p:'🏌️‍♀️',a:'bob',s:'swing'},golfGu:{p:'⛳',a:'swing',s:'swing'},kart:{p:'🏎️',a:'zoom',s:'engine'},kartGu:{p:'🏎️',a:'zoom',s:'engine'},
+ bartend:{p:'🍸',a:'shake',s:'shaker'},drinkKiki:{p:'🥂',a:'bob',s:'clink'},heir:{p:'💼',a:'float',s:'clink'},partyGo:{p:'🎉',a:'bounce',s:'cheer'},partyHost:{p:'🎤',a:'bounce',s:'cheer'},
+ gallery:{p:'🖼️',a:'float'},gala:{p:'🥂',a:'bob',s:'clink'},date:{p:'🌹',a:'float',s:'clink'},appt:{p:'☕',a:'float',s:'clink'},
+};
+function actSound(k,dur){if(!AU.ctx||!AU.on||!k)return;const c=AU.ctx,t=c.currentTime,end=t+dur,out=c.createGain();
+ out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(1,t+.15);out.gain.setValueAtTime(1,Math.max(t+.2,end-.25));out.gain.linearRampToValueAtTime(0,end);out.connect(AU.sfxBus);
+ const N=()=>{const n=c.createBufferSource();n.buffer=AU.noise;n.loop=true;n.start(t);n.stop(end+.1);return n};
+ const F=(ty,f,q)=>{const x=c.createBiquadFilter();x.type=ty;x.frequency.value=f;if(q)x.Q.value=q;return x};
+ const G=v=>{const g=c.createGain();g.gain.value=v;return g};
+ const L=(rate,depth,param)=>{const o=c.createOscillator(),g=G(depth);o.frequency.value=rate;o.connect(g);g.connect(param);o.start(t);o.stop(end+.1)};
+ const chain=(...xs)=>{for(let i=0;i<xs.length-1;i++)xs[i].connect(xs[i+1])};
+ switch(k){
+  case 'vacuum':{const n=N(),f=F('bandpass',900,.8),g=G(.2);chain(n,f,g,out);const o=c.createOscillator();o.type='sawtooth';o.frequency.value=150;const of=F('lowpass',500),og=G(.035);chain(o,of,og,out);o.start(t);o.stop(end+.1);L(.6,260,f.frequency);break}
+  case 'water':{const n=N(),f=F('bandpass',1400,1.5),g=G(.14);chain(n,f,g,out);L(3,600,f.frequency);break}
+  case 'oven':{const n=N(),f=F('highpass',3500),g=G(.05);chain(n,f,g,out);L(11,.04,g.gain);break}
+  case 'espresso':case 'steam':{const n=N(),f=F('highpass',2500),g=G(.08);chain(n,f,g,out);L(.5,.05,g.gain);break}
+  case 'grind':{const n=N(),f=F('bandpass',2200,2),g=G(.12);chain(n,f,g,out);L(18,.08,g.gain);break}
+  case 'engine':{const o=c.createOscillator();o.type='sawtooth';o.frequency.value=72;const f=F('lowpass',700),g=G(.09);chain(o,f,g,out);o.start(t);o.stop(end+.1);L(.45,38,o.frequency);break}
+  case 'register':{const keep=AU.bus;AU.bus=out;brush(t+.02,.05,.5);vib(t+.12,100,.5,.12);vib(t+.12,107,.5,.08);brush(t+.35,.12,.35);AU.bus=keep;break}
+  case 'coins':{const keep=AU.bus;AU.bus=out;for(let i=0;i<5;i++)vib(t+.05+i*.07+Math.random()*.03,98+((i*5)%9),.12,.07);AU.bus=keep;break}
+  case 'dishes':{const keep=AU.bus;AU.bus=out;for(let x=t+.1,i=0;x<end-.1;x+=.38+Math.random()*.3,i++){vib(x,93+(i*7)%11,.08,.06);if(i%3===0)brush(x+.05,.04,.2)}AU.bus=keep;break}
+  case 'cheer':{const n=N(),f=F('bandpass',1200,.6),g=G(.1);chain(n,f,g,out);L(1.3,.05,g.gain);break}
+  default:{const keep=AU.bus;AU.bus=out;const step={crunch:.45,clink:.9,pour:.3,piano:.3,paper:.45,cart:.55,swing:1.3,shaker:.16,wipe:.45,blend:.12,spray:.8}[k]||.6;let i=0;
+   for(let x=t+.1;x<end-.1;x+=step,i++){
+    if(k==='piano')ep(x,60+[0,4,7,12,7,4,2,5][i%8],.3,.06);
+    else if(k==='clink')vib(x,95+(i%3),.05,.05);
+    else if(k==='swing'){brush(x,.14,.25);vib(x+.25,84,.02,.04)}
+    else if(k==='pour')brush(x,.05,.25);
+    else brush(x,k==='crunch'?.12:.06,k==='crunch'?.06:.12);
+   }AU.bus=keep}
+ }}
+
+/* ---------- 仪表盘 ---------- */
+function renderDial(){
+  const r=44,C=2*Math.PI*r,e=S.energy/100;const dayP=(S.t-8)/16;
+  $('#dial').innerHTML=`<svg viewBox="0 0 100 100"><defs><linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--rg)"/><stop offset="1" stop-color="var(--rose)"/></linearGradient><radialGradient id="gf" cx="50%" cy="35%"><stop offset="0" stop-color="var(--tile1)"/><stop offset="1" stop-color="var(--pb2)"/></radialGradient></defs><circle cx="50" cy="50" r="48.5" fill="var(--pb1)"/><circle cx="50" cy="50" r="48.5" fill="url(#gf)" stroke="url(#gd)" stroke-width="1.4"/><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(185,120,111,.3)" stroke-width=".6"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(185,120,111,.15)" stroke-width="2.5"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${S.energy<20?'#f0a3a3':'url(#gd)'}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${C*e} ${C}" transform="rotate(-90 50 50)"/><circle cx="${50+37*Math.sin(dayP*2*Math.PI)}" cy="${50-37*Math.cos(dayP*2*Math.PI)}" r="2" fill="var(--rose)"/></svg><div class="txt"><small>第${S.ch}周 · 周${DAYS[S.day-1]||'日'}</small><span>${hm(S.t)}</span><small>精力 ${S.energy}</small></div>`;
+}
+function renderDash(){
+  setTimeout(renderClock);
+  musicSet(S.loc?(SONGMAP[S.loc]||'theme'):'theme');
+  renderDial();
+  $('#wallet').innerHTML=`<div class="m" data-st="money">¥ ${S.money.toLocaleString()}</div><div data-st="gifts" style="font-size:11px;letter-spacing:.5px">礼物 ${S.gifts} · 甜点 ${S.sweets} · 食材 ${S.food} · 水果 ${S.fruit} · 蛋白 ${S.protein}</div><div class="r">${rank(S)}</div>`;
+  $('#stats').innerHTML=['charm','talent','fame','mood','friend'].map(k=>`<div class="st" data-st="${k}"><span>${NAME[k]}</span><div class="b"><i style="width:${S[k]}%;background:${COLOR[k]}"></i></div><b>${S[k]}</b></div>`).join('');
+  const al=[['bolt',S.energy<20,'精力'],['sad',S.mood<25,'心情'],['broken',S.ch>=2&&!S.loveToday&&S.t>=18,'今天还没见他'],['coin',S.money<100,'没钱了']];
+  $('#alerts').innerHTML=al.map(([i,on,t])=>`<div class="al ${on?'on':''}" title="${t}">${icon(i)}</div>`).join('');
+  const dots=10,on=Math.round(S.love/10);
+  $('#rel').innerHTML=`<div class="row" data-st="love"><div class="head" style="background-image:${face('su')}"></div><div class="track">${Array.from({length:dots},(_,i)=>`<i class="${i<on?'on':''}"></i>`).join('')}</div><div class="head" style="background-image:${face('gu')}"></div></div><div class="lb">好感 ${S.love} · ${S.love<20?'陌生人':S.love<45?'暧昧':S.love<70?'恋人':S.love<90?'热恋':'非你不娶'}</div>`;
+  const c=CH[S.ch-1];
+  $('#quest').innerHTML=`<h3>${c.t}</h3>`+Object.keys(c.g).map(k=>{const p=Math.min(100,S[k]/c.g[k]*100);return `<div class="q ${p>=100?'ok':''}"><div class="t"><span>${p>=100?'✓ ':''}${NAME[k]}</span><span>${S[k]}/${c.g[k]}</span></div><div class="b"><i style="width:${p}%"></i></div></div>`}).join('');
+}
+function renderAll(){$('#stage').classList.toggle('inroom',!!S.loc);renderWorld();renderDash();if(S.loc){$('#room').classList.add('show');$('#quest').style.display='none';renderRoom()}else{$('#room').classList.remove('show');$('#quest').style.display=''}}
+
+function fit(){document.documentElement.style.setProperty('--k',Math.min(innerWidth/1280,innerHeight/800))}addEventListener('resize',fit);fit();
+const THEMES=['rose','blush','champagne'];
+try{const t=localStorage.getItem('haomen-theme');if(THEMES.includes(t))$('#stage').dataset.theme=t}catch(e){}
+$('#exitBtn').onclick=e=>{e.stopPropagation();if(!busy&&S.loc)leaveRoom()};
+$('#restartBtn').onclick=async e=>{e.stopPropagation();if(busy)return;const i=await talk('su','要从第一周重新开始吗？现在的进度会清空。',[['重新开始','从第 1 周开局'],['算了','继续玩']]);if(i===0){try{localStorage.removeItem(KEY)}catch(_){}if(S.loc)leaveRoom();newGame()}};
+$('#planBtn').onclick=e=>{e.stopPropagation();openPlan()};
+$('#themeBtn').onclick=e=>{e.stopPropagation();const i=(THEMES.indexOf($('#stage').dataset.theme)+1)%THEMES.length;$('#stage').dataset.theme=THEMES[i];try{localStorage.setItem('haomen-theme',THEMES[i])}catch(e){}};
+renderMusicBtn();
+if(load()){renderAll();setTimeout(()=>{if(!busy&&!S.won)guWeekCall()},1200)}else newGame();
+</script>
+</body>
+</html>
