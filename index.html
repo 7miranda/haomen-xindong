@@ -633,7 +633,7 @@ const CH=[
   ['su','（备忘录第一行。就差打个勾了。）']]},
 ];
 const HINT=[
- '三姑给你安排了和靳野的约会——看顶部行程条，准时赴约。平时去咖啡馆上班攒钱，买条像样的裙子提升魅力。每天要付 ¥30 房租和生活费。',
+ '三姑给你安排了和靳野的约会——看顶部行程条，准时赴约。平时去咖啡馆上班攒钱，买条像样的裙子提升魅力。每天有少量生活费；房租每 4 周交一次。',
  '名流圈开门了。他每天早上会来咖啡馆，拉花最省钱；别忘了练练才艺。',
  '魅力够 25 才进得了晚宴。晚宴最涨名望。',
  '好感和存款都要：白天上班，晚上约会，别乱花钱。',
@@ -783,8 +783,15 @@ const A=[
  {id:'giveSweets',loc:['cafe','elite','golf','kart'],n:'送他自制甜点',h:0,win:[8,27],x:66,d:()=>'甜点-1 好感+4（每天一次）',line:'「自己烤的，不好吃别勉强。」——我知道他会全吃完。',need:s=>!guHere()?'他现在不在这里':s.sweets<1?'没有甜点，去后厨或在家烘焙':s.giftLove&&'今天送过东西了',run:s=>{add('sweets',-1);add('love',4);s.giftLove=s.loveToday=true}},
 ];
 const EV=[
+ {t:'杂志街拍',who:'su',min:2,d:'在名店城门口，一个时尚杂志的摄影师拦住我：「小姐，能拍一组街拍吗？」',o:[['摆出最贵的姿势',{fame:3,mood:6}],['害羞地拒绝',{mood:-1}]]},
+ {t:'妈妈的汤',who:'mama',d:'囡囡，妈托老乡给你捎了一壶煲好的汤，在楼下保安亭。',o:[['马上下楼拿，一口气喝完',{energy:12,mood:8}],['回个视频电话撒撒娇',{mood:10}]]},
+ {t:'神秘礼物',who:'su',min:2,d:'门口放着一个丝绒盒子，里面是一条细细的手链，没有署名。',o:[['戴上，明天让他看见',{charm:2,love:2}],['先收起来，放长线',{mood:4}]]},
+ {t:'周太的邀请',who:'regular',min:3,d:'小妹，下周六我们几个太太搞个慈善拍卖，你来帮我们递牌子，好不好？',o:[['好呀，正想见见世面',{fame:4,energy:-8}],['那天要上班，下次一定',{mood:-1}]]},
+ {t:'品牌合作',who:'su',min:4,d:'一个小众珠宝品牌私信我：「想请您戴我们的新款拍几张照。」',o:[['接！还送一条项链',{fame:3,charm:2}],['婉拒，掉价',{mood:2}]]},
+ {t:'流浪猫',who:'su',d:'一只小橘猫跟着我走到楼下，蹭我的腿。',o:[['带它去猫咖找个家',{mood:8,friend:1}],['给它买根火腿肠',{mood:4,money:-5}]]},
+ {t:'Kiki 失恋了',who:'kiki',d:'（哭腔）宝……他把我拉黑了……你今晚能陪陪我吗？',o:[['马上去陪她，带上冰淇淋',{friend:8,energy:-10,mood:-2}],['发个长语音安慰她',{friend:3}]]},
+ {t:'咖啡店来了明星',who:'boss',min:2,d:'阿妩快来！有个小明星在店里，点名要你拉花！',o:[['拉一个天鹅，让他拍照发微博',{fame:4,mood:5}],['淡定照常做',{talent:1}]]},
  {t:'熟客的小费',who:'su',d:'一位老太太说我笑起来像她年轻时，塞给我一个红包。',o:[['甜甜地收下',{money:100,mood:5}],['推辞，请她喝咖啡（她认识好多太太）',{money:-20,mood:10,fame:1}]]},
- {t:'房东来敲门',who:'su',d:'房东说下个月要涨房租。',o:[['咬牙答应',{money:-120}],['装可怜讲价',{energy:-10,money:-40}]]},
  {t:'暴雨',who:'su',d:'出门才发现没带伞，新做的头发……',o:[['冒雨冲',{energy:-12,charm:-1}],['打车，头发比钱重要',{money:-40}]]},
  {t:'白玫瑰',who:'su',min:2,d:'咖啡馆门口放着一束白玫瑰，卡片上只写了一个「言」。',o:[['发消息谢谢他',{love:3,mood:8}],['已读不回，吊吊他',{love:-2,charm:1}]]},
  {t:'红酒',who:'xu',min:5,d:'哎呀，不好意思——手滑了。',o:[['笑着说没关系，转身哭给靳野看',{fame:4,love:3,mood:-6}],['也「手滑」一下',{fame:-3,mood:6}]]},
@@ -892,7 +899,7 @@ function npcsIn(id){
   if(id==='party')n.push(['kiki',18]);
   if(id==='cafe'){n.push(['boss',16]);if(S.t>=14&&S.t<18)n.push(['regular',70]);if(S.day%2===1&&S.t>=15&&S.t<18&&!n.some(x=>x[0]==='gu'))n.push(['kiki',40])}
   if(id==='mall'){n.push(['clerk',38]);if(S.ch>=3&&(S.day===2||S.day===5)&&S.t>=14&&S.t<19)n.push(['xu',72])}
-  if(id==='home'){if(S.kikiVisit===S.day&&S.t>=19)n.push(['kiki',72]);if(S.day===1&&S.t>=10&&S.t<13)n.push(['landlady',76])}
+  if(id==='home'){if(S.kikiVisit===S.day&&S.t>=19)n.push(['kiki',72]);if(S.day===1&&S.rentPaid===S.ch&&S.t>=10&&S.t<13)n.push(['landlady',76])}
   if(id==='tea'&&S.ch>=4&&S.t>=14)n.push(['mom',76]);
   if(id==='dine'&&S.t>=19&&S.day%3===0)n.push(['kiki',72]);
   return n.filter(x=>NPC_OK[x[0]]);
@@ -1011,7 +1018,7 @@ async function endDay(sleep,fast){if(ENDING)return;ENDING=true;try{return await 
 async function endDay0(sleep,fast){
   const b={...S};
   if(S.ch>=3&&S.metGu&&!S.loveToday)add('love',-2);
-  const cost=S.ch<=3?30:S.ch<=8?50:70;add('money',-cost);
+  const cost=S.ch<=4?15:S.ch<=8?25:35;add('money',-cost);
   add('energy',(sleep?(S.t<=22?38:S.t<=24?30:Math.max(10,30-(S.t-24)*6)):Math.max(8,20-Math.max(0,S.t-24)*4))+(S.clean?8:0)+(S.ateWell?6:0));
   if(!S.clean)S.dirty=(S.dirty||0)+1;const messy=S.dirty>=3;if(messy)add('mood',-6);
   const late=!sleep;
@@ -1021,7 +1028,7 @@ async function endDay0(sleep,fast){
   if(S.day>7)return endWeek(fast);
   renderAll();save();
   if(fast)return;
-  await talk('su',(late?'玩到半夜，被迫回家倒头就睡。':'晚安，海湾市。')+`（房租和生活费 -¥${cost}）`+(b.ch>=3&&b.metGu&&!b.loveToday?'（今天没联系他，好感 -2）':'')+(messy?'（屋子三天没打扫，乱糟糟的，心情 -6）':'')+(b.ateWell?'（吃得健康，精力恢复更多）':''),null,diffText(b));
+  await talk('su',(late?'玩到半夜，被迫回家倒头就睡。':'晚安，海湾市。')+`（今天的生活费 -¥${cost}）`+(b.ch>=3&&b.metGu&&!b.loveToday?'（今天没联系他，好感 -2）':'')+(messy?'（屋子三天没打扫，乱糟糟的，心情 -6）':'')+(b.ateWell?'（吃得健康，精力恢复更多）':''),null,diffText(b));
   if(missed.length)await talk(missed[0].kind==='meet'?missed[0].who:'aunt',missed[0].kind==='meet'?`你没来「${LOC[missed[0].loc].n}」……放鸽子是吧？（心情 -5，名望 -1）`:`${missed[0].n}在「${LOC[missed[0].loc].n}」等了你一下午！三姑的脸往哪儿搁？（心情 -5，名望 -1）`);
   if(Math.random()<.3)await event();
   if(S.friend>=15&&Math.random()<.35){S.kikiVisit=S.day;await talk('kiki','今晚 7 点后我去你家玩！把家收拾一下，我带炸鸡～')}
@@ -1036,9 +1043,12 @@ async function event(fast){
   const b={...S};const fx=e.o[i][1];for(const k in fx)add(k,fx[k]);renderAll();pops(b);save();
 }
 const CALLS=[
+ {who:'regular',min:2,d:'小妹呀，我是周太。明天下午来半岛茶室陪我喝个茶好不好？我介绍几个太太给你认识。',meet:{loc:'tea',from:14,to:17,day:'tomorrow',what:'陪周太喝下午茶',h:2,fx:{fame:4,mood:3},line:'周太把我介绍给三位太太：「这是我干女儿，懂事得很。」'},o:[['好呀，明天见',{}],['明天要上班，改天',{mood:-1}]]},
+ {who:'kiki',d:'宝！名店城今天打折，我请你喝奶茶，陪我逛逛嘛！',meet:{loc:'mall',from:14,to:18,day:'tonight',what:'陪 Kiki 逛名店城',h:2,fx:{friend:5,mood:8,charm:1},line:'Kiki 买了三双鞋，我只买了一支口红——但我们都很开心。'},o:[['走起！',{}],['今天没空',{friend:-1}]]},
+ {who:'gu',min:2,met:true,d:'今晚有空吗？带你去吃一家没有菜单的法餐。',meet:{loc:'dine',from:19,to:22,day:'tonight',what:'靳野请你吃法餐',h:2,fx:{love:7,mood:8},seen:true,line:'他替我切好牛排，推过来：「多吃点，你最近瘦了。」'},o:[['好，几点？',{}],['今晚不行，下次吧',{love:-2}]]},
+ {who:'mama',d:'囡囡，你小学同学下个月结婚，妈替你随了份子，你也打个电话祝福一下。',o:[['打过去，聊了半小时',{mood:5,friend:2}],['发个红包了事',{money:-50,mood:2}]]},
  {who:'kiki',d:'喂！今晚 Pier 9 有新调酒师，超帅。来不来？',meet:{loc:'bar',from:20,to:22,day:'tonight',what:'和 Kiki 去看帅调酒师',h:2,fx:{friend:5,mood:8,charm:1},line:'调酒师给我推了一杯「乔小姐特调」。Kiki 尖叫了一整晚。'},o:[['来！你请客',{}],['改天吧，我要早睡',{friend:-1,energy:5}]]},
  {who:'mama',d:'囡囡，在那边还好吗？别太累，家里都好。',o:[['寄点钱回家',{money:-100,mood:10}],['撒个娇说都好',{mood:5}]]},
- {who:'landlord',d:'乔小姐，楼下水管漏了，这周要收一点维修费。',o:[['按时交',{money:-60}],['求宽限几天',{mood:-5}]]},
  {who:'gu',min:1,met:true,d:'在干嘛？刚开完会……突然想听你的声音。明早来店里，我请你喝咖啡。',meet:{loc:'cafe',from:8,to:11,day:'tomorrow',what:'靳野约你喝咖啡',h:1,fx:{love:5},seen:true,line:'他把咖啡推过来：「你做的那杯，比这个好喝。」'},o:[['陪他多聊一会儿',{love:3,energy:-8}],['「困了，晚安。」吊吊他',{love:1,charm:1}]],seen:true},
  {who:'spam',d:'您好，我们这里有一套海景豪宅……',o:[['礼貌挂断',{}],['耐心听完（顺便打听房价）',{mood:-3,talent:1}]]},
  {who:'xu',min:5,d:'乔小姐？我是秦骄。周末的派对，你会来吧？可别迟到哦。',meet:{loc:'party',from:20,to:23,day:6,what:'秦骄的周六派对',h:2,fx:{fame:4,charm:1,mood:-2},line:'秦骄当众夸我的裙子「很有勇气」。我笑着回她：「你的也是。」全场都听见了。'},o:[['甜甜地说一定到',{}],['「看心情。」',{charm:1,mood:3}]]},
@@ -1055,8 +1065,8 @@ async function phoneCall(fast){
 const RICH=[{n:'贺枭',d:'地产少爷，开一辆骚粉色的跑车',loc:'elite',from:15,to:18,line:'听说你在咖啡店打工？有意思。我家楼盘的售楼处，正好缺个门面。'},
  {n:'陆鸩',d:'珠宝世家的二公子，手上戴三枚戒指',loc:'golf',from:10,to:14,ch:3,line:'我不打球，我只是来看看谁值得我送一颗钻石。'},
  {n:'沈戾',d:'游艇俱乐部的少东家，刚从摩纳哥回来',loc:'bar',from:19,to:22,line:'这杯酒算我的。你的时间，开个价？'}];
-const MISS={aunt:{mood:-4,fame:-1},mama:{mood:-5},gu:{love:-3},kiki:{friend:-3},landlord:{money:-40},xu:{fame:-1},spam:{}};
-const MISSLINE={aunt:'三姑在家族群里阴阳怪气：「有的人啊，翅膀硬了。」',mama:'妈妈发来一条语音：「囡囡，是不是在忙……那妈不打扰了。」',gu:'靳野发来一条消息：「……挂我电话？行。」',kiki:'Kiki：「？？？已读不回是吧，姐妹情到此为止。」',landlord:'房东直接从押金里扣了维修费。',xu:'秦骄笑着跟别人说：「她啊，架子大得很。」',spam:'挂得好。'};
+const MISS={aunt:{mood:-4,fame:-1},mama:{mood:-5},gu:{love:-3},kiki:{friend:-3},landlord:{money:-40},xu:{fame:-1},regular:{fame:-1},spam:{}};
+const MISSLINE={regular:'周太在太太群里叹气：「年轻人，忙呀。」',aunt:'三姑在家族群里阴阳怪气：「有的人啊，翅膀硬了。」',mama:'妈妈发来一条语音：「囡囡，是不是在忙……那妈不打扰了。」',gu:'靳野发来一条消息：「……挂我电话？行。」',kiki:'Kiki：「？？？已读不回是吧，姐妹情到此为止。」',landlord:'房东直接从押金里扣了维修费。',xu:'秦骄笑着跟别人说：「她啊，架子大得很。」',spam:'挂得好。'};
 async function apptTick(){
   if(!guDatesOfWeek().length&&!S.won)await guWeekCall();
   for(const a of (S.appts||[]).filter(a=>!a.done&&!a.missed&&a.ch===S.ch&&a.day===S.day)){
@@ -1223,6 +1233,7 @@ async function endWeek(fast){
 /* ---------- 过场 ---------- */
 function cutCard(wk,title,html,go){return new Promise(res=>{const c=$('#cut');c.innerHTML=`<div class="card"><div class="wk">${wk}</div><h1>${title}</h1>${html}<div class="go">${go}</div></div>`;c.classList.add('show');c.onclick=()=>{c.classList.remove('show');res()}})}
 async function startWeek(){
+  S.rentDue=(S.ch===5||S.ch===9)&&S.rentPaid!==S.ch;
   const c=CH[S.ch-1];const cut=$('#cut');
   await cutCard(`WEEK ${S.ch} / 12`,c.t,`<div class="g">本周目标：${Object.keys(c.g).map(k=>NAME[k]+' '+c.g[k]).join(' · ')}</div>`,'点击继续');
   const xs=c.cast.length===1?[50]:[34,66];const fx=fxOf(c.room);const H=fx.h*1.25,B=fx.b;
@@ -1235,7 +1246,8 @@ async function startWeek(){
     cut.querySelectorAll('.stagebox .sprite').forEach(sp=>sp.classList.toggle('dim',sp.dataset.w!==w&&c.cast.length>1));
     await new Promise(r=>cut.onclick=r)}
   cut.classList.remove('show');cut.onclick=null;
-  S.loc=null;renderAll();await talk('su','（提示）'+HINT[S.ch-1]);await guWeekCall();
+  S.loc=null;renderAll();await talk('su','（提示）'+HINT[S.ch-1]);
+  if(S.rentDue){const b={...S};add('money',-500);S.rentPaid=S.ch;S.rentDue=false;renderAll();pops(b);save();await talk('landlady','乔小姐，又到一个月啦——这个月的房租 ¥500，我就直接收了哈。下个月见！',null,diffText(b))}await guWeekCall();
 }
 function newGame(){S=fresh();SNAP={...S};suX=LOC.home.door;renderAll();save();startWeek()}
 
