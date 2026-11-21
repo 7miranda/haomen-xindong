@@ -511,6 +511,13 @@ h1,h3,#quest h3,#cut .card h1,#roomName,.act .an,#talk .who,#cut .bar .who{font-
 #plan .wr button.off{background:transparent;color:var(--ink2)}
 #plan .wr button i{width:14px;height:14px;border-radius:50%;display:inline-block}
 #plan .sm{font-size:12px;color:var(--ink2);margin:10px 0 0}
+
+/* 结算面板：通过 / 未通过统一版式 */
+#cut .res{width:680px!important;max-width:84%;height:300px;align-items:stretch!important;box-sizing:border-box}
+#cut .res .rp{height:340px!important;align-self:flex-end;margin:-60px 0 0 22px!important}
+#cut .res .rr{display:flex;flex-direction:column;justify-content:center;padding:24px 0 24px 8px!important}
+#cut .res .stamp{align-self:flex-start;margin-bottom:10px!important}
+#cut .res .rtag{align-self:flex-start;margin-top:12px;padding:5px 14px;border-radius:999px;font-size:12px;letter-spacing:2px;color:#f1d39b;border:1px solid rgba(241,211,155,.45);background:rgba(241,211,155,.08)}
 </style>
 </head>
 <body>
@@ -1224,10 +1231,10 @@ function morningNotes(){const out=[];const ap=(S.appts||[]).find(a=>!a.done&&!a.
   return out}
 
 const unmet=()=>{const g=CH[S.ch-1].g;return Object.keys(g).filter(k=>S[k]<g[k])};
-function resultHTML(c,ok,mono){
+function resultHTML(c,ok,mono,tag){
   const rows=Object.keys(c.g).map(k=>{const p=Math.min(100,S[k]/c.g[k]*100);const hit=S[k]>=c.g[k];
     return `<div class="rrow ${hit?'hit':'miss'}"><span>${NAME[k]}</span><div class="rb"><i style="width:${p}%"></i></div><b>${S[k]} / ${c.g[k]}</b></div>`}).join('');
-  return `<div class="res"><img class="rp" src="${IMG.su}"><div class="rr"><div class="stamp ${ok?'ok':'ng'}">${ok?'达成':'未达标'}</div>${rows}<p class="mono">「${mono}」</p></div></div>`;
+  return `<div class="res"><img class="rp" src="${IMG.su}"><div class="rr"><div class="stamp ${ok?'ok':'ng'}">${ok?'达成':'未达标'}</div>${rows}<p class="mono">「${mono}」</p><div class="rtag">${tag||(ok?'本周目标全部达成':'本周重来，进度回到周一')}</div></div></div>`;
 }
 const MONO_OK=['计划第一步，完成。','他开始上钩了。','这只是开始。','离备忘录第一行，又近了一步。'];
 const MONO_NG=['这一周不算。重来——这次一步都不会错。','失误可以，失败不行。从周一重新来。','我不着急。猎人都很有耐心。'];
@@ -1241,7 +1248,7 @@ async function endWeek(fast){
   if(S.ch===CH.length){S.won=true;save();if(!fast){sfx('win');}if(!fast)await cutCard('最终章','十二周的婚礼',`<div class="res"><img class="rp" src="${IMG.su}"><div class="rr"><div class="stamp ok">嫁入豪门</div><p class="mono" style="font-size:15px;line-height:1.9;text-align:left">教堂的钟声响起。靳野在红毯尽头等她，靳夫人替她理了理头纱，秦骄在宾客席上举杯，笑得很勉强。<br>乔妩打开手机备忘录，在第一行后面，打了一个勾。</p></div></div>`,'点击重新开始');if(!fast)newGame();return 'win'}
   const rh=resultHTML(c,true,pick(MONO_OK));
   S.ch++;S.day=1;S.t=8;SNAP={...S};save();
-  if(!fast){sfx('win');await cutCard(`第 ${S.ch-1} 周 · 结算`,c.t,rh+`<div class="g" style="margin-top:14px">新身份：${rank(S)}</div>`,'点击进入下一周');startWeek()}
+  if(!fast){sfx('win');await cutCard(`第 ${S.ch-1} 周 · 结算`,c.t,resultHTML(c,true,pick(MONO_OK),'新身份 · '+rank(S)),'点击进入下一周');startWeek()}
   return 'pass';
 }
 
