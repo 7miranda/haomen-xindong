@@ -696,7 +696,7 @@ const A=[
  {id:'gallery',loc:'elite',ic:'🖼',n:'艺术品鉴会',h:2,win:[14,18],x:17,d:()=>'¥50 名望+3 才艺+1',line:'画看不懂没关系，太太们的名字要记住。',need:s=>s.money<50?'钱不够':s.energy<8&&'精力不足',run:s=>{add('money',-50);add('fame',3);add('talent',1);add('energy',-8)}},
  {id:'gala',loc:'elite',ic:'🥂',n:'出席晚宴',h:3,win:[19,21],x:50,d:s=>`¥120 名望+${4+Math.floor(s.charm/25)} 好感+2`,line:'一杯香槟，换十张名片。',need:s=>s.charm<25?'魅力 25 才进得了门':s.money<120?'钱不够':s.energy<12&&'精力不足',
   run:s=>{add('money',-120);add('fame',4+Math.floor(s.charm/25)+(s.friend>=60?1:0));add('love',2);add('mood',4);add('energy',-12);s.loveToday=true}},
- {id:'date',loc:'elite',ic:'🌹',n:'和靳野约会',h:2,win:[15,21],x:70,d:s=>`¥60 好感+${4+Math.floor(s.charm/20)} 心情+10`,line:'今晚要让他以为，是他在追我。',need:s=>s.money<60?'钱不够':s.energy<8&&'精力不足',
+ {id:'date',loc:'elite',ic:'🌹',n:'约靳野吃晚饭',h:2,win:[15,21],x:70,d:s=>`¥60 好感+${4+Math.floor(s.charm/20)} 心情+10`,line:'今晚要让他以为，是他在追我。',need:s=>s.money<60?'钱不够':s.energy<8&&'精力不足',
   run:s=>{add('money',-60);add('love',4+Math.floor(s.charm/20));add('mood',10);add('energy',-8);s.loveToday=true}},
  {id:'giftLove',loc:'elite',ic:'💝',n:'送他礼物',h:0,win:[14,27],x:70,d:()=>'好感+5（每天一次）',line:'「路过顺手买的。」——当然不是。',need:s=>s.gifts<1?'没有礼物，去商业街挑':s.giftLove&&'今天送过了',run:s=>{add('gifts',-1);add('love',5);s.giftLove=s.loveToday=true}},
  /* 家里：营养、健身、家务 */
@@ -933,8 +933,9 @@ function renderRoom(){
   const card=a=>{const why=blocked(a);return `<div class="act ${why?'off':''}" data-act="${a.id}" title="${a.d(S)}${why?' · '+why:''}">${icon(a.id)}<span class="an">${a.n}</span><span class="ac">${why||(a.h?a.h+'小时 · ':'')+a.d(S).split(' ')[0]}</span></div>`};
   const okA=acts.filter(a=>!blocked(a)),offA=acts.filter(a=>blocked(a));
   const ap=apptHere(),apOk=ap&&S.t>=ap.from&&S.t<=ap.to;
-  $('#acts').innerHTML=(ap?`<div class="act appt ${apOk?'':'off'}" data-act="appt">${icon('date')}<span class="an">赴约：${ap.kind==='meet'?ap.what:'见'+ap.n}</span><span class="ac">${apOk?(ap.h||2)+'小时':'约在 '+ap.from+':00'}</span></div>`:'')+
-    acts.map(card).join('')+`<div class="act exit" data-act="exit">${icon('exit')}<span class="an">离开</span><span class="ac">回到地图</span></div>`;
+  const GUACTS=['date','golfGu','kartGu','latte'];const shown=ap&&ap.who==='gu'?acts.filter(a=>!GUACTS.includes(a.id)):acts;
+  $('#acts').innerHTML=(ap?`<div class="act appt ${apOk?'':'off'}" data-act="appt">${icon('date')}<span class="an">⏰ 赴约：${ap.kind==='meet'?ap.what:ap.kind==='gu'?'和靳野的约会':'见'+ap.n}</span><span class="ac">${apOk?'现在就能去 · '+(ap.h||2)+'小时':'约在 '+hm(ap.from)+'，到点再来'}</span></div>`:'')+
+    shown.map(card).join('')+`<div class="act exit" data-act="exit">${icon('exit')}<span class="an">离开</span><span class="ac">回到地图</span></div>`;
   $('#offList').innerHTML=offA.map(a=>`<div class="ol"><b>${a.n}</b><span>${blocked(a)}</span></div>`).join('');$('#offList').classList.remove('show');
   requestAnimationFrame(()=>{const b=$('#acts');b.scrollLeft=0;window.actNavSync&&actNavSync()});
 }
