@@ -681,7 +681,8 @@ const DLG={
 };
 
 /* ---------- 地点与活动 ---------- */
-const wage=s=>150+Math.floor(s.charm/10)*15;
+const wage=s=>180+Math.floor(s.charm/10)*20;
+const payScale=()=>1+0.15*((S&&S.ch||1)-1);
 const RANK=['咖啡店店员','画廊常客','晚宴女伴','名媛新秀','海湾名媛','准靳太太'];
 const rank=s=>RANK[Math.min(5,Math.floor((s.fame+s.love)/36))];
 const LOC={
@@ -1087,7 +1088,7 @@ async function doAct(id,fast){
       $('#prog').style.display='block';$('#progT').textContent=a.n+'中…';const pb=$('#progB');pb.style.transition='none';pb.style.width='0';void pb.offsetWidth;pb.style.transition=`width ${dur}s linear`;pb.style.width='100%';
       const t0=S.t;for(let i=1;i<=steps;i++){await wait(600);S.t=t0+a.h*i/steps;renderDial();renderClock()}S.t=t0;$('#prog').style.display='none';su.classList.remove('busy','act-'+P.a);pr.remove();setPose(null)}}
   const b={...S};const note=a.run(S)||'';S.t+=a.h;if(a._with==='kiki'){add('friend',3);S.talkedKiki=true}if(a._with==='gu'){add('love',4);S.loveToday=true}a._with=null;
-  if(/golf/.test(id)&&owned('golfSet')&&id==='golfLesson')add('talent',2);if(['golf','riding'].includes(LOC[S.loc]?.sub||S.loc)&&owned('visor'))add('mood',4);if(id==='ownRace'&&owned('raceSuit'))add('fame',2);if(['kart','kartGu','ownRace'].includes(id)&&owned('helmet'))add('mood',5);if(!fast){const dm=S.money-b.money;if(dm<0)actSound('register',.9);else if(dm>0)actSound('coins',.8)}
+  if(/golf/.test(id)&&owned('golfSet')&&id==='golfLesson')add('talent',2);if(['golf','riding'].includes(LOC[S.loc]?.sub||S.loc)&&owned('visor'))add('mood',4);if(id==='ownRace'&&owned('raceSuit'))add('fame',2);if(['kart','kartGu','ownRace'].includes(id)&&owned('helmet'))add('mood',5);{const dm=S.money-b.money;if(dm>0&&payScale()>1)add('money',Math.round(dm*(payScale()-1)));if(!fast){if(dm<0)actSound('register',.9);else if(dm>0)actSound('coins',.8)}}
   pops(b);renderAll();save();busy=false;if(!fast)sfx(S.money>b.money?'coin':'done');
   if(!fast){const show=S.ch>=2&&['date','giftLove','latte','gala'].includes(id)&&$(`[data-npc="gu"]`)&&Math.random()<.6;
     if(show)await talk('gu',{date:'下次……还能约你吗？',giftLove:'你怎么知道我喜欢这个？',latte:'今天的心……画歪了。故意的？',gala:'你今晚，比香槟还抢眼。'}[id],null,diffText(b));
@@ -1558,7 +1559,10 @@ const POSE={clean:'mop',wipe:'mop',bake:'bake',tart:'bake',apple:'eat',sample:'e
  gala:'toast',drinkKiki:'toast',heir:'toast',partyGo:'toast',partyHost:'toast',date:'toast',appt:'toast',bouquet:'flower',ikebana:'flower',
  groceries:'cart',stock:'cart',pray:'pray',etiquette:'read',french:'read',arthist:'read',manners:'read',volunteer:'cart'};
 const POSE_OK={};Object.values(POSE).forEach(k=>{if(POSE_OK[k]!==undefined)return;POSE_OK[k]=false;const im=new Image();im.onload=()=>POSE_OK[k]=true;im.src=`assets/pose_${k}.png`});
-function setPose(k){const src=k&&POSE_OK[k]?`assets/pose_${k}.png`:IMG.su;['#su','#suCast'].forEach(q=>{const e=$(q);if(e)e.src=src})}
+const POSE_OUT={};Object.keys(POSE_OK).forEach(k=>['gown','slip','suit','tennis','golfWear'].forEach(o=>{const im=new Image();im.onload=()=>POSE_OUT[k+'_'+o]=1;im.src=`assets/pose_${k}_${o}.png`}));
+function setPose(k){const o=S.wear&&S.wear.outfit;let src=IMG.su;
+  if(k&&POSE_OK[k]){if(!o||o==='tweed')src=`assets/pose_${k}.png`;else if(POSE_OUT[k+'_'+o])src=`assets/pose_${k}_${o}.png`}
+  ['#su','#suCast'].forEach(q=>{const e=$(q);if(e)e.src=src})}
 /* ---------- 做事时的音效 ---------- */
 const PROPS={
  rest:{p:'💤',a:'float'},etiquette:{p:'📚',a:'bob'},mask:{p:'✨',a:'float'},clean:{p:'🧹',a:'sweep',s:'vacuum'},bake:{p:'🧁',a:'steam',s:'oven'},
