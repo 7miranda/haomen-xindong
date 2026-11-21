@@ -825,7 +825,7 @@ const A=[
  {id:'makeupOn',loc:'home',n:'化个全妆',h:.5,win:[6,22],x:21,d:()=>'美妆-1 今天魅力+5',line:'底妆、修容、眼线挑高两毫米——今天的我，谁都别想移开眼。',need:s=>s.madeUp===s.day?'今天已经化好了':(s.makeup||0)<1&&'没有美妆，去名店城精品店买',run:s=>{s.makeup--;s.madeUp=s.day;add('mood',3)}},
  /* 卡丁车场 → 海湾超跑 4S 店 */
  {id:'to4s',loc:'kart',n:'去隔壁 4S 店',h:0,win:[10,21],x:86,d:()=>'看车、试驾、买车',line:'',go:'cars'},
- {id:'carShop',loc:'cars',n:'看车选车',h:0,win:[10,21],x:30,d:()=>'机车 · Mini · 保时捷',line:'',shop:['car']},
+ {id:'carShop',loc:'cars',n:'看车选车',h:0,win:[10,21],x:30,d:()=>'机车 · 小轿车 · 跑车',line:'',shop:['car']},
  {id:'testDrive',loc:'cars',n:'试驾超跑',h:1,win:[10,20],x:54,d:()=>'心情+10 名望+1（每天一次）',line:'销售在副驾抓紧了扶手。我笑着说：放心，我只是开得像有钱人。',need:s=>s.testDrive===s.day&&'今天试驾过了',run:s=>{add('mood',10);add('fame',1);s.testDrive=s.day}},
  {id:'carsBack',loc:'cars',n:'回到卡丁车场',h:0,win:[10,22],x:10,d:()=>'离开车行',line:'',go:'kart'},
  {id:'ownRace',loc:'kart',n:'开自己的车上赛道',h:2,win:[12,20],x:66,d:()=>'名望+3 心情+12 精力-10',line:'自己的车，自己的赛道。看台上有人举起手机——明天的热搜，是我。',need:s=>!hasCar()?'先去隔壁 4S 店买辆车':s.energy<10&&'精力不足',run:s=>{add('fame',3);add('mood',12);add('energy',-10)}},
@@ -1570,10 +1570,10 @@ const ITEMS={
  raceSuit:{c:'gear',tab:'race',n:'粉色赛车服',p:800,st:0,col:'#f19ab0',desc:'开车上赛道名望额外 +2'},
  helmet:{c:'gear',tab:'race',n:'珍珠白头盔',p:600,st:0,col:'#f4f1ea',desc:'飙车心情额外 +5'},
  moto:{c:'car',n:'粉色复古机车',p:8800,st:2,tier:1,fb:1,cb:0,col:'#f19ab0'},
- miniCar:{c:'car',n:'奶油色 Mini',p:26000,st:3,tier:2,fb:2,cb:1,col:'#efe6d2'},
- benz:{c:'car',n:'白色奔驰敞篷',p:58000,st:5,tier:3,fb:4,cb:2,col:'#f4f4f2'},
- porsche:{c:'car',n:'玫瑰金保时捷',p:98000,st:8,tier:4,fb:8,cb:3,col:'#d9a48a'},
- ferrari:{c:'car',n:'酒红法拉利',p:260000,st:12,tier:5,fb:15,cb:5,col:'#8a1a2c'},
+ miniCar:{c:'car',n:'奶油色小轿车',p:26000,st:3,tier:2,fb:2,cb:1,col:'#efe6d2'},
+ benz:{c:'car',n:'白色敞篷轿跑',p:58000,st:5,tier:3,fb:4,cb:2,col:'#f4f4f2'},
+ porsche:{c:'car',n:'玫瑰金跑车',p:98000,st:8,tier:4,fb:8,cb:3,col:'#d9a48a'},
+ ferrari:{c:'car',n:'酒红超跑',p:260000,st:12,tier:5,fb:15,cb:5,col:'#8a1a2c'},
 };
 const CATS={golf:'高尔夫',race:'赛车',outfit:'服装',watch:'名表',jewel:'首饰',bag:'包包',makeup:'美妆',car:'座驾'};
 const SLOTS=['outfit','watch','jewel','bag','car'];
@@ -1591,7 +1591,7 @@ function openShop(cats,title){
     const list=Object.entries(ITEMS).filter(([id,it])=>(it.tab?it.tab===cur:it.c===cur)&&it.p>0).map(([id,it])=>{
       const has=owned(id)&&it.c!=='makeup';
       return `<div class="si${has?' has':''}">${pic(id,it)}<b>${it.n}</b><span>${it.c==='car'?`<em class="tier">${'★'.repeat(it.tier)} ${TIERN[it.tier]}</em> 名望+${it.fb}${it.cb?' 魅力+'+it.cb:''} · 穿搭+${it.st} · 适合「${CARFOR[it.tier]}」`:it.desc?it.desc:it.c==='makeup'?'用一次：当天魅力 +5 · 内含 '+it.qty+' 份':'穿搭分 +'+it.st+(it.c==='car'?' · 跨城区只要半小时':'')}</span><button data-buy="${id}" ${has?'disabled':''}>${has?'已拥有':'¥'+it.p}</button></div>`}).join('');
-    const guide=cats.includes('car')?['车行销售 Max','这台保时捷，配你刚刚好。试驾不要钱，心动要钱。']:cats.includes('golf')?['店员小林','球杆要选轻一点的，女生挥起来才好看。']:['导购 Ann',S.charm<30?'这季新款到了，你穿酒红会很好看。':'乔小姐来啦！VIP 室给你留着呢。'];
+    const guide=cats.includes('car')?['车行销售 Max','这台玫瑰金跑车，配你刚刚好。试驾不要钱，心动要钱。']:cats.includes('golf')?['店员小林','球杆要选轻一点的，女生挥起来才好看。']:['导购 Ann',S.charm<30?'这季新款到了，你穿酒红会很好看。':'乔小姐来啦！VIP 室给你留着呢。'];
     $('#plan').innerHTML=`<div class="pbox shop"><button class="px">×</button><h3>${title}</h3><div class="guide"><div class="gface"></div><div><b>${guide[0]}</b><p>「${guide[1]}」</p></div><button class="gtalk">和导购聊聊</button></div><div class="tabs">${cats.map(c=>`<button data-cat="${c}" class="${c===cur?'on':''}">${CATS[c]}</button>`).join('')}</div><div class="sgrid">${list}</div><p class="sm">存款 ¥${S.money} · 当前穿搭分 ${styleScore()}（约会时算进魅力）</p></div>`;
     $('#plan .px').onclick=()=>$('#plan').classList.remove('show');
     $('#plan .gtalk').onclick=async()=>{$('#plan').classList.remove('show');await guideTalk(cats);openShop(cats,title)};
