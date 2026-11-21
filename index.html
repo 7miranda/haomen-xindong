@@ -548,9 +548,9 @@ const NAME={energy:'精力',mood:'心情',charm:'魅力',talent:'才艺',fame:'�
 const COLOR={charm:'#e88aa0',talent:'#b7a3e6',fame:'#e8c26a',love:'#ff8a9a',mood:'#f2a27a',energy:'#ffd36b'};
 const CAP={energy:100,mood:100,charm:100,talent:100,fame:100,love:100,friend:100,money:1e9,gifts:99,sweets:99,food:99,fruit:99,protein:99};
 const DAYS='一二三四五六日';
-const IMG={su:'assets/sutang.png',gu:'assets/guyan.png',mom:'assets/gumom.png',xu:'assets/xuqing.png',kiki:'assets/kiki.png',boss:'assets/npc_boss.png',regular:'assets/npc_regular.png',clerk:'assets/npc_clerk.png',landlady:'assets/npc_landlady.png'};
-const NPC_OK={su:1,gu:1,mom:1,xu:1,kiki:1};['boss','regular','clerk','landlady'].forEach(k=>{const im=new Image();im.onload=()=>{NPC_OK[k]=1;if(S&&S.loc)renderAll()};im.src=IMG[k]});
-const PEOPLE={su:'乔妩',gu:'靳野',mom:'靳夫人·沈鸷',xu:'秦骄',kiki:'林骁 Kiki',mama:'妈妈',aunt:'三姑',boss:'梅姐 · 老板娘',regular:'周太',clerk:'柜姐 Ann',landlady:'包租婆',landlord:'房东',spam:'陌生号码',rich:'富二代'};
+const IMG={su:'assets/sutang.png',gu:'assets/guyan.png',mom:'assets/gumom.png',xu:'assets/xuqing.png',kiki:'assets/kiki.png',boss:'assets/npc_boss.png',regular:'assets/npc_regular.png',clerk:'assets/npc_clerk.png',landlady:'assets/npc_landlady.png',maitre:'assets/npc_maitre.png'};
+const NPC_OK={su:1,gu:1,mom:1,xu:1,kiki:1};['boss','regular','clerk','landlady','maitre'].forEach(k=>{const im=new Image();im.onload=()=>{NPC_OK[k]=1;if(S&&S.loc)renderAll()};im.src=IMG[k]});
+const PEOPLE={su:'乔妩',gu:'靳野',mom:'靳夫人·沈鸷',xu:'秦骄',kiki:'林骁 Kiki',mama:'妈妈',aunt:'三姑',boss:'梅姐 · 老板娘',maitre:'Leo · 餐厅领班',regular:'周太',clerk:'柜姐 Ann',landlady:'包租婆',landlord:'房东',spam:'陌生号码',rich:'富二代'};
 
 /* ---------- 12 周剧情 ---------- */
 const CH=[
@@ -738,6 +738,8 @@ const A=[
  /* 咖啡馆 */
  {id:'wipe',loc:'cafe',n:'擦桌收银',h:1,win:[8,21],x:40,d:()=>'¥45 精力-6',line:'擦桌子的时候，顺便听听隔壁桌太太们的八卦。',need:s=>s.energy<6&&'精力不足',run:s=>{add('money',45);add('energy',-6);add('mood',-2)}},
  {id:'toKitchen',loc:'cafe',n:'进入后厨',h:0,win:[8,22],x:72,d:()=>'去后厨看看',line:'',go:'kitchen'},
+ {id:'matchCafe',loc:'cafe',n:'请周太牵线',h:.5,win:[14,18],x:78,d:()=>'介绍一位富二代，明天见面',line:'',match:'regular',need:s=>s.ch<2?'第 2 周开放':pendingAppt()?'已经有一场相亲约好了':s.matched===s.day&&'今天已经找人牵过线了'},
+ {id:'matchDine',loc:'dine',n:'找领班 Leo 牵线',h:.5,win:[18,23],x:86,d:()=>'¥100 小费 · 介绍一位阔少',line:'',match:'maitre',fee:100,need:s=>s.ch<2?'第 2 周开放':pendingAppt()?'已经有一场相亲约好了':s.matched===s.day?'今天已经找人牵过线了':s.money<100&&'钱不够付小费'},
  {id:'wardrobe',loc:'home',n:'打开衣柜',h:0,win:[0,28],x:30,d:()=>'换衣服、戴首饰、挑包',line:'',wardrobe:true},
  {id:'makeupOn',loc:'home',n:'化个全妆',h:.5,win:[6,22],x:21,d:()=>'美妆-1 今天魅力+5',line:'底妆、修容、眼线挑高两毫米——今天的我，谁都别想移开眼。',need:s=>s.madeUp===s.day?'今天已经化好了':(s.makeup||0)<1&&'没有美妆，去名店城精品店买',run:s=>{s.makeup--;s.madeUp=s.day;add('mood',3)}},
  /* 卡丁车场 → 海湾超跑 4S 店 */
@@ -828,7 +830,7 @@ const ICONS={
  apple:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5M12 7c0-2 1-4 3-4',shake:'M8 3h8l-1 18H9zM7 7h10M12 3V1',
  yoga:'M12 4a2 2 0 1 0 0 .1M12 7v6M6 10l6 3 6-3M8 21l4-8 4 8',laundry:'M4 3h16v18H4zM4 7h16M12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8M7 5h.01',
  buyFruit:'M12 7c-3-2-7 0-7 5s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9s-4-7-7-5',buyProtein:'M7 6h10v14H7zM9 3h6v3H9zM9 11h6',
- toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',wardrobe:'M5 3h14v18H5zM12 3v18M9 11v2M15 11v2',makeupOn:'M9 3h6v5H9zM8 8h8l-1 13H9z',to4s:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2M6 14h.01M18 14h.01',carShop:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2',testDrive:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 12l5-3M12 21v-6',carsBack:'M4 21V4h16v17M9 21v-7h6v7',ownRace:'M4 20l4-14h8l4 14M12 8v3M12 14v3',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
+ toGym:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',wardrobe:'M5 3h14v18H5zM12 3v18M9 11v2M15 11v2',makeupOn:'M9 3h6v5H9zM8 8h8l-1 13H9z',to4s:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2M6 14h.01M18 14h.01',carShop:'M3 14l2-5h14l2 5v4H3zM7 18v2M17 18v2',testDrive:'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 12l5-3M12 21v-6',carsBack:'M4 21V4h16v17M9 21v-7h6v7',ownRace:'M4 20l4-14h8l4 14M12 8v3M12 14v3',matchCafe:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M12 20s-5-3-5-6a2.5 2.5 0 0 1 5-1a2.5 2.5 0 0 1 5 1c0 3-5 6-5 6',matchDine:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M12 20s-5-3-5-6a2.5 2.5 0 0 1 5-1a2.5 2.5 0 0 1 5 1c0 3-5 6-5 6',toTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M11 3v3',hiTea:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2',teaArt:'M4 14h12l-1 5H5zM16 15h3M8 11q1-3 0-6M12 11q1-3 0-6',teaLady:'M8 8a3 3 0 1 0 0 .1M16 8a3 3 0 1 0 0 .1M3 20c0-4 3-6 5-6s5 2 5 6M11 20c0-4 3-6 5-6s5 2 5 6',teaBack:'M4 21V4h16v17M9 21v-7h6v7',
  toDine:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineSolo:'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 3-3 6s1 3 3 3v9',dineKiki:'M12 20s-7-4-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 6-7 10-7 10',dineManner:'M4 12h16M6 12a6 6 0 0 1 12 0M12 6V4M3 16h18',dineBack:'M4 21V4h16v17M9 21v-7h6v7',
  toPet:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petCat:'M5 20V9l3-4 2 4h4l2-4 3 4v11zM9 13h.01M15 13h.01M10 16q2 1 4 0',petWalk:'M5 10a2 2 0 1 0 0 .1M10 6a2 2 0 1 0 0 .1M14 6a2 2 0 1 0 0 .1M19 10a2 2 0 1 0 0 .1M12 12c-3 0-6 4-6 6s2 2 6 2 6 0 6-2-3-6-6-6',petPhoto:'M4 7h4l2-3h4l2 3h4v13H4zM12 10a4 4 0 1 0 0 8a4 4 0 1 0 0-8',petBack:'M4 21V4h16v17M9 21v-7h6v7',pt:'M3 10v4M6 8v8M18 8v8M21 10v4M6 12h12',pilates:'M12 4a2 2 0 1 0 0 .1M4 20h16M7 20l5-9 5 9',sauna:'M8 4q2 2 0 4t0 4M12 4q2 2 0 4t0 4M16 4q2 2 0 4t0 4M4 18h16',toMall:'M4 21V4h16v17M9 21v-7h6v7',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3a3 3 0 0 1 3 3zM20 16a3 3 0 1 1-3-3a3 3 0 0 1 3 3z',mute:'M4 9v6h4l5 4V5L8 9zM17 9l4 6M21 9l-4 6'};
 const icon=k=>`<svg class="i" viewBox="0 0 24 24"><path d="${ICONS[k]||''}"/></svg>`;
@@ -902,6 +904,7 @@ function npcsIn(id){
   if(id==='home'){if(S.kikiVisit===S.day&&S.t>=19)n.push(['kiki',72]);if(S.day===1&&S.rentPaid===S.ch&&S.t>=10&&S.t<13)n.push(['landlady',76])}
   if(id==='tea'&&S.ch>=4&&S.t>=14)n.push(['mom',76]);
   if(id==='dine'&&S.t>=19&&S.day%3===0)n.push(['kiki',72]);
+  if(id==='dine'&&S.t>=18)n.push(['maitre',58]);
   return n.filter(x=>NPC_OK[x[0]]);
 }
 const guHere=()=>npcsIn(S.loc).some(n=>n[0]==='gu');const kikiHere=()=>npcsIn(S.loc).some(n=>n[0]==='kiki');
@@ -993,6 +996,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function doAct(id,fast){
   const a=A.find(x=>x.id===id);if(!a||blocked(a))return false;
   if(a.sleep)return endDay(true);
+  if(a.match){if(await askMatch(a.match,a.fee)){S.t+=a.h;renderAll();save()}return true}
   if(a.shop){sfx('click');openShop(a.shop,a.n);return true}
   if(a.wardrobe){sfx('click');openWardrobe();return true}
   if(a.go){sfx('click');suX=LOC[a.go].door;enterRoom(a.go);return true}
@@ -1065,7 +1069,17 @@ async function phoneCall(fast){
 /* ---------- 自动来电：必须选择接听或挂断，挂断会影响数值 ---------- */
 const RICH=[{n:'贺枭',d:'地产少爷，开一辆骚粉色的跑车',loc:'elite',from:15,to:18,line:'听说你在咖啡店打工？有意思。我家楼盘的售楼处，正好缺个门面。'},
  {n:'陆鸩',d:'珠宝世家的二公子，手上戴三枚戒指',loc:'golf',from:10,to:14,ch:3,line:'我不打球，我只是来看看谁值得我送一颗钻石。'},
- {n:'沈戾',d:'游艇俱乐部的少东家，刚从摩纳哥回来',loc:'bar',from:19,to:22,line:'这杯酒算我的。你的时间，开个价？'}];
+ {n:'沈戾',d:'游艇俱乐部的少东家，刚从摩纳哥回来',loc:'bar',from:19,to:22,line:'这杯酒算我的。你的时间，开个价？'},
+ {n:'顾琛',d:'航运世家的长孙，袖扣是古董',loc:'dine',from:19,to:22,line:'我订了靠窗的位子。听说你喜欢看海——我家的船，就停在对面。'},
+ {n:'温屿',d:'画廊老板的独子，说话轻声细语',loc:'tea',from:14,to:17,line:'这壶白毫银针，我从福鼎带回来的。你尝尝，比那些晚宴上的酒干净。'}];
+async function askMatch(who,fee){
+  const pool=RICH.filter(r=>(!r.ch||S.ch>=r.ch)&&(!LOC[r.loc].ch||S.ch>=LOC[r.loc].ch));const k=pool[Math.floor(Math.random()*pool.length)];
+  const day=Math.min(7,S.day+1);if(S.day>=7){await talk(who,'这周都排满啦，下周一再来找我。');return false}
+  const intro=who==='maitre'?`乔小姐，我们这儿的常客里，有一位——${k.n}，${k.d}。他问过我好几次，那位气质特别的小姐是谁。`:`小妹，我手上正好有一位——${k.n}，${k.d}。人我见过，配你不亏。`;
+  const i=await talk(who,intro+`\n📍 周${DAYS[day-1]} ${k.from}:00–${k.to}:00 在「${LOC[k.loc].n}」见一面？`,[['好，帮我约',fee?`小费 ¥${fee} · 记入行程`:'记入行程'],['再考虑考虑','—']]);
+  if(i!==0)return false;const b={...S};if(fee)add('money',-fee);S.matched=S.day;
+  S.appts.push({...k,ch:S.ch,day});renderAll();pops(b);save();
+  await talk('su',`记下了：周${DAYS[day-1]} ${k.from}:00，「${LOC[k.loc].n}」，见${k.n}。顶部行程条会提醒我。`);questCheck('appt');return true}
 const MISS={aunt:{mood:-4,fame:-1},mama:{mood:-5},gu:{love:-3},kiki:{friend:-3},landlord:{money:-40},xu:{fame:-1},regular:{fame:-1},spam:{}};
 const MISSLINE={regular:'周太在太太群里叹气：「年轻人，忙呀。」',aunt:'三姑在家族群里阴阳怪气：「有的人啊，翅膀硬了。」',mama:'妈妈发来一条语音：「囡囡，是不是在忙……那妈不打扰了。」',gu:'靳野发来一条消息：「……挂我电话？行。」',kiki:'Kiki：「？？？已读不回是吧，姐妹情到此为止。」',landlord:'房东直接从押金里扣了维修费。',xu:'秦骄笑着跟别人说：「她啊，架子大得很。」',spam:'挂得好。'};
 async function apptTick(){
