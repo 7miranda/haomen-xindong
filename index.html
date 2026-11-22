@@ -1554,10 +1554,10 @@ const ITEMS={
  slip:{c:'outfit',n:'香槟真丝吊带裙',p:380,st:3,col:'#ead2a4'},
  suit:{c:'outfit',n:'白色西装套裙',p:520,st:4,col:'#f7f4ee'},
  gown:{c:'outfit',n:'酒红丝绒晚礼服',p:1200,st:8,col:'#7a1830'},
- goldWatch:{c:'watch',n:'金色小方表',p:680,st:2,col:'#d8b36a'},
+ goldWatch:{c:'watch',n:'金色星空腕表',p:680,st:2,col:'#d8b36a'},
  diaWatch:{c:'watch',n:'满钻女士腕表',p:3200,st:6,col:'#e8eef5'},
  pearl:{c:'jewel',n:'珍珠项链',p:300,st:1,col:'#f4efe6'},
- diaEar:{c:'jewel',n:'钻石耳钉',p:900,st:3,col:'#dfe9f3'},
+ diaEar:{c:'jewel',n:'钻石水滴耳坠',p:900,st:3,col:'#dfe9f3'},
  emerald:{c:'jewel',n:'祖母绿戒指',p:2600,st:5,col:'#2f8a6a'},
  chainBag:{c:'bag',n:'奶油菱格链条包',p:0,st:0,col:'#efe3cf'},
  mini:{c:'bag',n:'粉色迷你手袋',p:560,st:2,col:'#f2b8c8'},
@@ -1612,7 +1612,7 @@ async function buyItem(id){const it=ITEMS[id];if(S.money<it.p){toast('钱不够'
   const b={...S};add('money',-it.p);S.owned=S.owned||[];S.wear=S.wear||{};
   if(it.c==='makeup'){S.makeup=(S.makeup||0)+it.qty}else{S.owned.push(id);if(it.c!=='gear')S.wear[it.c]=id;add('mood',5);if(it.c==='car'){add('fame',it.fb);add('charm',it.cb)}}
   actSound('register',.9);renderAll();pops(b);save();toast(it.c==='car'?`买下${it.n}！${carMatch()?'和你的身份很配，穿搭分额外 +3':'先开着，等身份配得上更好的车'}`:it.c==='makeup'?`买了${it.n}，美妆 +${it.qty}`:it.c==='gear'?`买下${it.n}：${it.desc}`:`买下${it.n}，已经穿戴上`);setOutfit()}
-function itemPic(id,it){return it.c==='outfit'?`<div class="pic fig"><img src="${id==='tweed'?'assets/sutang.png':'assets/su_'+id+'.png'}" onerror="this.parentNode.style.background='${it.col}';this.remove()"></div>`:`<div class="pic" style="background:${it.col}"><img src="assets/item_${id}.png" onerror="this.remove()"></div>`}
+function itemPic(id,it){return it.c==='outfit'?`<div class="pic fig"><img src="${id==='tweed'?'assets/sutang.png':'assets/su_'+id+'.png'}" onerror="this.parentNode.style.background='${it.col}';this.remove()"></div>`:`<div class="pic" style="background:radial-gradient(circle at 50% 40%,#fff 0%,#f6efe6 60%,#e9ddd0 100%)"><img src="assets/item_${id}.png" onerror="this.parentNode.style.background='${it.col}';this.remove()"></div>`}
 function openWardrobe(cur){
   cur=cur||'outfit';const slots=['outfit','watch','jewel','bag','car'];
   const mine=Object.entries(ITEMS).filter(([id,it])=>it.c===cur&&(it.p===0||owned(id)));
